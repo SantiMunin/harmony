@@ -5,6 +5,7 @@ import Distribution.Simple.Setup
 import Distribution.PackageDescription (HookedBuildInfo, emptyHookedBuildInfo)
 import System.Process (system)
 import System.Exit (ExitCode (..))
+import System.Environment (getArgs)
 
 main = defaultMainWithHooks $ simpleUserHooks { preBuild = makeBnfc }
 
@@ -12,12 +13,9 @@ main = defaultMainWithHooks $ simpleUserHooks { preBuild = makeBnfc }
 -- compiling.  
 makeBnfc :: Args -> BuildFlags -> IO HookedBuildInfo
 makeBnfc _ _ = do 
-  bnfcOutput <- system "bnfc -d language_spec/Language.cf"
+  bnfcOutput <- system $ "if [ 'language_spec/Language.cf' -nt src/Language/ ];"
+                      ++ "then echo \"Language specification needs to be compiled\";"
+                      ++ "bnfc -d language_spec/Language.cf; rm -rf src/Language; mv Language src; fi"
   case bnfcOutput of
-       ExitSuccess -> putStrLn "Bnfc file successfully generated"
-       (ExitFailure code) -> error $ "Error compiling the language specification: " ++ show code
-  mvOutput <- system "rm -rf src/Language; mv Language src"
-  case mvOutput of
-       (ExitFailure code) -> error "Error moving the generated files to src/Language"
-       _ -> putStrLn "Generated files moved to src/Language"
-  return emptyHookedBuildInfo
+       ExitSuccess -> return emptyHookedBuildInfo
+       (ExitFailure code) -> error $ "Error processing the language specification: " ++ show code
