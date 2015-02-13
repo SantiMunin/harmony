@@ -15,7 +15,7 @@ makeBnfc _ _ = do
   bnfcOutput <- system "bnfc -d language_spec/Language.cf"
   case bnfcOutput of
        ExitSuccess -> putStrLn "Bnfc file successfully generated"
-       (ExitFailure code) -> error "Error compiling the language specification: " ++ show code
+       (ExitFailure code) -> error $ "Error compiling the language specification: " ++ show code
   mvOutput <- system "rm -rf src/Language; mv Language src"
   case mvOutput of
        (ExitFailure code) -> error "Error moving the generated files to src/Language"

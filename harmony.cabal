@@ -48,7 +48,7 @@ executable harmony
 
   main-is: Harmony.hs
 
-  build-depends:       base >=4.7 && <4.8, array
+  build-depends:       base >=4.7 && <4.8, array, containers, BNFC
   
   hs-source-dirs:      src
 
