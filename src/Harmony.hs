@@ -21,7 +21,7 @@ main = do
            Ok tree -> case staticCheck tree of
                            Bad err -> error $ show err
                            Ok _ -> generateOutput tree
-       args -> error "Usage: harmony <source_file>"
+       _ -> error "Usage: harmony <source_file>"
   return ()
 
 generateOutput :: Specification -> IO ()
