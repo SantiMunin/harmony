@@ -36,6 +36,8 @@ category:            Development
 
 build-type:          Custom
 
+data-files:          templates/node_js.tpl
+
 -- Extra files to be distributed with the package, such as examples or a 
 -- README.
 extra-source-files:  README.md
@@ -48,7 +50,7 @@ executable harmony
 
   main-is:             Harmony.hs
 
-  build-depends:       base >=4.7 && <4.8, array, containers, BNFC
+  build-depends:       base >=4.7 && <4.8, array, containers, BNFC, hastache, text
   
   hs-source-dirs:      src
 

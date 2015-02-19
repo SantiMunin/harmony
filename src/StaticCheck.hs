@@ -22,7 +22,7 @@ staticCheck spec@(Spec _ _ enums structs resources) =
 -- | Looks for name clashes in the definitions.
 checkClashes :: [EnumType] -> [StructType] -> [Resource] -> Err ()
 checkClashes enums structs resources =
-  let duplicates = findDuplicatesInDefinitions enums structs resources in
+  let duplicates = findDuplicatesInDefinitions enums structs in
     case duplicates of
        Nothing -> return ()
        Just name ->
@@ -57,7 +57,7 @@ checkStructs structs enums =
 
 -- | TODO
 checkResources :: [Resource] -> [StructType] -> Err ()
-checkResources = undefined
+checkResources _ _ = return ()
 
 getEnumNames :: [EnumType] -> [String]
 getEnumNames = map getEnumName

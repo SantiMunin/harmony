@@ -3,12 +3,17 @@ module Main where
 import qualified Data.Set           as Set
 import           System.Environment (getArgs)
 
+import qualified Data.Text.Lazy     as TL
+import qualified Data.Text.Lazy.IO  as TL
 import           Language.Abs
 import           Language.ErrM
 import           Language.Lex
 import           Language.Par
 import           Language.Print
+import           ServiceGenerator
 import           StaticCheck
+import           TemplateCompiler
+
 
 main :: IO ()
 main = do
@@ -25,4 +30,9 @@ main = do
   return ()
 
 generateOutput :: Specification -> IO ()
-generateOutput (Spec name version enums structs resource) = putStrLn "A"
+generateOutput spec =
+  do
+    putStrLn "Rendering backend"
+    -- TODO: generalize so different templates can be used
+    output <- renderServer "templates/node_js.tpl" $ generateService spec
+    TL.putStrLn output
