@@ -16,8 +16,8 @@ data Schema = Schema { name :: String, route :: String, keyField :: String, sche
 data Service = Service { schema :: [Schema] } deriving (Show, Data, Typeable)
 
 -- | Given a template and a service object, it renders the server.
-renderServer :: String -> Service -> IO TL.Text
-renderServer templateLoc service =
+render:: String -> Service -> IO TL.Text
+render templateLoc service =
   do
     template <- getDataFileName templateLoc >>= readFile
     let context = mkGenericContext service in

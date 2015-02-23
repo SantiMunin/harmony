@@ -1,14 +1,11 @@
 module ServiceGenerator(generateService) where
 
 import           Language.Abs
+import           LangUtils
 import           TemplateCompiler
-
 -- | Creates a Service object from a Specification object.
 generateService :: Specification -> Service
--- TODO: implement
 generateService (Spec name version enums structs resources) = Service $ map (generateSchema structs) resources
-
---Service [Schema { name = "Map", route = "route", keyField = "key", schemaVars = [SchemaVar { varName = "key", varType = "String", isKey = False, isRequired = False}]}]
 
 generateSchema :: [StructType] -> Resource -> Schema
 generateSchema structs (DefResNoOp (Ident name') route' _) =
@@ -17,13 +14,9 @@ generateSchema structs (DefResNoOp (Ident name') route' _) =
          , keyField = getKeyField struct
          , schemaVars = generateVars struct }
   where
-    struct = head $ filter (\(DefStr (Ident strName) _) -> strName == name') structs
+    struct = head $ filter (\str -> strName str == name') structs
     getKeyField :: StructType -> String
-    getKeyField (DefStr _ fields) = extractName $ head $ filter hasPkAnnotation fields
-    hasPkAnnotation (FString annotations (Ident name)) = isPk annotations
-    hasPkAnnotation (FInt annotations (Ident name)) = isPk annotations
-    hasPkAnnotation (FDouble annotations (Ident name)) = isPk annotations
-    hasPkAnnotation _ = error "hasPkAnnotation not implemented yet for custom types"
+    getKeyField (DefStr _ fields) = fieldName $ head $ filter (isPk . fieldAnnotations) fields
 
 generateVars :: StructType -> [SchemaVar]
 generateVars (DefStr (Ident name) fields) = map getVarFromField fields
@@ -49,8 +42,3 @@ isPk = containsAnnotation "PK"
 isRequiredField :: [Annotation] -> Bool
 isRequiredField = containsAnnotation "Required"
 
-extractName :: Field -> String
-extractName (FString _ (Ident name)) = name
-extractName (FInt _ (Ident name)) = name
-extractName (FDouble _ (Ident name)) = name
-extractName _ = error "Extract name for custom types not implemented yet"
