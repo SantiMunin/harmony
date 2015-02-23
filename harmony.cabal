@@ -50,7 +50,13 @@ executable harmony
 
   main-is:             Harmony.hs
 
-  build-depends:       base >=4.7 && <4.8, array, containers, BNFC, hastache, text
+  build-depends:       base >=4.7 && <4.8
+                     , array
+                     , containers
+                     , BNFC
+                     , hastache
+                     , text
+                     , mtl
   
   hs-source-dirs:      src
 
