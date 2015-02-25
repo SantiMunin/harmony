@@ -1,11 +1,12 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
-    app = express();
+    app = express(),
+    args = process.argv.slice(2);
 
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost/test3');
+mongoose.connect(args[1]);
 
 {{#schema}}
 
@@ -48,5 +49,5 @@ app.delete('{{&route}}/:id', function(req, res) {
 
 {{/schema}}
 
-app.listen(3000);
+app.listen(args[0]);
 
