@@ -32,8 +32,8 @@ generateAndCopy dest service (templatePath, newExt)  = do
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output
   where
-    destFileWithoutExt = takeWhile (/= '.') $ dest ++ "/" ++ templatePath
-    destDir = take ((last $ elemIndices '/' destFile) + 1) destFile
+    destFileWithoutExt = takeWhile (/= '.') $ dest ++ dropWhile (/= '/') templatePath
+    destDir = take (last (elemIndices '/' destFile) + 1) destFile
     destFile = destFileWithoutExt ++ "." ++ newExt
 
 -- TODO(9): add type mapping information
