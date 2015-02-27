@@ -28,10 +28,11 @@ main = do
        _ -> error "Usage: harmony <source_file>"
   return ()
 
-generateOutput :: Specification -> IO ()
-generateOutput spec =
   -- TODO: use flags to collect information for client and server, tests should be always the same
-  OG.generateOutput
-      "/tmp/harmony_output"
-     (OG.createGenInfo [] [("templates/js/server/server.tpl", "js"), ("templates/js/server/package.tpl", "json")])
-     spec
+generateOutput :: Specification -> IO ()
+generateOutput = OG.generateOutput "/tmp/harmony_output" (OG.createGenInfo files templates)
+  where
+    files = []
+    templates = [ ("templates/server/js/server.tpl", "js")
+                , ("templates/server/js/package.tpl", "json") ]
+

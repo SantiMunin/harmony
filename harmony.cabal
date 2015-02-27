@@ -36,8 +36,8 @@ category:            Development
 
 build-type:          Custom
 
-data-files:          templates/js/server/server.tpl
-                   , templates/js/server/package.tpl
+data-files:          templates/server/js/server.tpl
+                   , templates/server/js/package.tpl
 
 -- Extra files to be distributed with the package, such as examples or a 
 -- README.
