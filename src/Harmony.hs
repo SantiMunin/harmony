@@ -1,17 +1,10 @@
 module Main where
 
-import           Control.Monad.Error
-import           Control.Monad.State
-import qualified Data.Set                   as Set
-import qualified Data.Text.Lazy             as TL
-import qualified Data.Text.Lazy.IO          as TL
 import qualified Generation.OutputGenerator as OG
 import           Language.Abs
 import           Language.ErrM
-import           Language.Lex
 import           Language.Par
-import           Language.Print
-import           StaticCheck
+import qualified StaticCheck                as SC
 import           System.Environment         (getArgs)
 
 main :: IO ()
@@ -22,7 +15,7 @@ main = do
          contents <- readFile file
          case pSpecification (myLexer contents) of
            Bad err -> error $ show err
-           Ok tree -> case staticCheck tree of
+           Ok tree -> case SC.staticCheck tree of
                         Bad err -> error $ show err
                         Ok _ -> generateOutput tree
        _ -> error "Usage: harmony <source_file>"

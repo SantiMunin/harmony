@@ -5,7 +5,7 @@ import           Control.Monad
 import           Data.List
 import qualified Data.Text.Lazy.IO           as TL
 import qualified Generation.ServiceGenerator as SG
-import           Generation.TemplateCompiler
+import qualified Generation.TemplateCompiler as TC
 import           Language.Abs
 import           Paths_Harmony
 import           System.Directory
@@ -26,9 +26,9 @@ copy origin dest = do
   cabalFilePath <- getDataFileName origin
   copyFile cabalFilePath (dest ++ "/" ++ origin)
 
-generateAndCopy :: FilePath -> Service -> TemplateInfo -> IO ()
+generateAndCopy :: FilePath -> TC.Service -> TemplateInfo -> IO ()
 generateAndCopy dest service (templatePath, newExt)  = do
-  output <- render templatePath service
+  output <- TC.render templatePath service
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output
   where
@@ -37,6 +37,6 @@ generateAndCopy dest service (templatePath, newExt)  = do
     destFile = destFileWithoutExt ++ "." ++ newExt
 
 -- TODO(9): add type mapping information
-generateServiceInfo :: Specification -> Service
+generateServiceInfo :: Specification -> TC.Service
 generateServiceInfo = SG.generateService
 

@@ -60,6 +60,8 @@ executable harmony
                      , mtl
                      , directory
   
+  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind
+  
   hs-source-dirs:      src
 
   build-tools:         alex, happy

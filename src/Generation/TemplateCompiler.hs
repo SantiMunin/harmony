@@ -3,9 +3,7 @@
 module Generation.TemplateCompiler where
 
 import           Data.Data
-import           Data.Monoid
 import qualified Data.Text.Lazy        as TL
-import qualified Data.Text.Lazy.IO     as TL
 import           Data.Typeable         ()
 import           Paths_Harmony
 import           Text.Hastache

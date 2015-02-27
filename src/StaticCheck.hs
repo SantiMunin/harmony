@@ -1,7 +1,6 @@
 module StaticCheck (staticCheck) where
 
 import           Control.Arrow
-import           Control.Monad       (unless)
 import           Data.Char
 import qualified Data.Foldable       as F
 import qualified Data.Map            as M
@@ -30,9 +29,12 @@ initialEnv = SEnv { enums = M.empty, structs = M.empty, resources = M.empty }
 --   * Name clashes
 --   * Undefined types
 staticCheck :: Specification -> Err ()
-staticCheck spec@(Spec _ _ enums structs resources) = evalStateT checkSeq initialEnv
+staticCheck (Spec _ _ enums structs resources) = evalStateT checkSeq initialEnv
   where
-    checkSeq = readAndCheckEnums enums >> readAndCheckStructs structs >> checkResources resources
+    checkSeq = checkClashes enums structs
+            >> readAndCheckEnums enums
+            >> readAndCheckStructs structs (getPossibleFieldTypes enums structs)
+            >> checkResources resources
 
 -- | Looks for name clashes in the definitions.
 --  Note that it skips resources are those need to have the same name as some struct.
@@ -57,16 +59,15 @@ readAndCheckEnums es = F.forM_ es checkEnumValues
       CMS.modify (\s -> s { enums = M.insert name (map enumValName vals) (enums s)})
 
 -- | Makes sure all the types used in the struct definitions are valid.
-readAndCheckStructs :: [StructType] -> StaticCheck ()
-readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
+readAndCheckStructs :: [StructType] -> [String] -> StaticCheck ()
+readAndCheckStructs strs knownTypes = F.forM_ strs structOk >> F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
-      structOk (DefStr (Ident name) fields) = F.forM_ fields fieldOk
+      structOk (DefStr _ fields) = F.forM_ fields fieldOk
 
       fieldOk :: Field -> StaticCheck()
       fieldOk (FDefined _ (Ident name) _) = do
-        definedEnums <- CMS.gets enums
-        unless (name `M.member` definedEnums)
+        unless (name `elem` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")
       fieldOk _ = return ()
 
@@ -108,8 +109,8 @@ findDuplicatesInDefinitions enums structs =
 findDuplicates :: [String] -> Maybe String
 findDuplicates list = go list S.empty S.empty
   where
-    go [] _ repeatedSet = Nothing
-    go (x:xs) seen repeatedSet | lowerCaseStr x `S.member` seen = return x
+    go [] _ _ = Nothing
+    go (x:_) seen _ | lowerCaseStr x `S.member` seen = return x
     go (x:xs) seen repeatedSet = go xs (lowerCaseStr x `S.insert` seen) repeatedSet
     lowerCaseStr :: String -> String
     lowerCaseStr = map toLower
