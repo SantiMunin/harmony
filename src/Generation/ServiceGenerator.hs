@@ -1,8 +1,8 @@
-module ServiceGenerator(generateService) where
+module Generation.ServiceGenerator(generateService) where
 
+import           Generation.TemplateCompiler
 import           Language.Abs
 import           LangUtils
-import           TemplateCompiler
 -- | Creates a Service object from a Specification object.
 generateService :: Specification -> Service
 generateService (Spec name version enums structs resources) = Service $ map (generateSchema structs) resources

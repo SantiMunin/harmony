@@ -36,7 +36,8 @@ category:            Development
 
 build-type:          Custom
 
-data-files:          templates/node_js.tpl
+data-files:          templates/js/server/server.tpl
+                   , templates/js/server/package.tpl
 
 -- Extra files to be distributed with the package, such as examples or a 
 -- README.
@@ -57,12 +58,18 @@ executable harmony
                      , hastache
                      , text
                      , mtl
+                     , directory
   
   hs-source-dirs:      src
 
   build-tools:         alex, happy
 
-  other-modules:       Language.Abs, Language.ErrM, Language.Lex, Language.Par
+  other-modules:       Generation.TemplateCompiler
+                     , Generation.OutputGenerator
+                     , Language.Abs
+                     , Language.ErrM
+                     , Language.Lex
+                     , Language.Par
   
   default-language:    Haskell2010
   

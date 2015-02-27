@@ -2,19 +2,17 @@ module Main where
 
 import           Control.Monad.Error
 import           Control.Monad.State
-import qualified Data.Set            as Set
-import qualified Data.Text.Lazy      as TL
-import qualified Data.Text.Lazy.IO   as TL
+import qualified Data.Set                   as Set
+import qualified Data.Text.Lazy             as TL
+import qualified Data.Text.Lazy.IO          as TL
+import qualified Generation.OutputGenerator as OG
 import           Language.Abs
 import           Language.ErrM
 import           Language.Lex
 import           Language.Par
 import           Language.Print
-import           ServiceGenerator
 import           StaticCheck
-import           System.Environment  (getArgs)
-import qualified TemplateCompiler    as TC
-
+import           System.Environment         (getArgs)
 
 main :: IO ()
 main = do
@@ -32,8 +30,8 @@ main = do
 
 generateOutput :: Specification -> IO ()
 generateOutput spec =
-  do
-    putStrLn "Rendering backend"
-    -- TODO: generalize so different templates can be used
-    output <- TC.render "templates/node_js.tpl" $ generateService spec
-    TL.putStrLn output
+  -- TODO: use flags to collect information for client and server, tests should be always the same
+  OG.generateOutput
+      "/tmp/harmony_output"
+     (OG.createGenInfo [] [("templates/js/server/server.tpl", "js"), ("templates/js/server/package.tpl", "json")])
+     spec

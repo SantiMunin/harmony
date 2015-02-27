@@ -11,7 +11,7 @@ mongoose.connect(args[1]);
 {{#schema}}
 
 var {{name}}Schema = new mongoose.Schema({
-    {{#Schemavar}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
+    {{#Schemavar}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
     dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/Schemavar}}
 });
 
@@ -50,4 +50,3 @@ app.delete('{{&route}}/:id', function(req, res) {
 {{/schema}}
 
 app.listen(args[0]);
-
