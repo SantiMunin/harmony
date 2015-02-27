@@ -14,12 +14,14 @@ data SchemaVar = SchemaVar { varName    :: String
                            , isKey      :: Bool
                            , isRequired :: Bool } deriving (Show, Data, Typeable)
 
-data Schema = Schema { name       :: String
-                     , route      :: String
-                     , keyField   :: String
-                     , schemaVars :: [SchemaVar] } deriving (Show, Data, Typeable)
+data Schema = Schema { schemaName  :: String
+                     , schemaRoute :: String
+                     , keyField    :: String
+                     , schemaVars  :: [SchemaVar] } deriving (Show, Data, Typeable)
 
-data Service = Service { schema :: [Schema] } deriving (Show, Data, Typeable)
+data Service = Service { name    :: String
+                       , version :: String
+                       , schema  :: [Schema] } deriving (Show, Data, Typeable)
 
 -- | Given a template and a service object, it renders the server.
 render:: String -> Service -> IO TL.Text

@@ -36,8 +36,8 @@ fieldAnnotations (FDouble annotations _) = annotations
 fieldAnnotations (FDefined annotations _ _) = annotations
 
 fieldType :: Field -> String
-fieldType (FString _ (Ident name)) = "String"
-fieldType (FInt _ (Ident name)) = "Int"
-fieldType (FDouble _ (Ident name)) = "Double"
+fieldType (FString _ _) = "String"
+fieldType (FInt _ _) = "Int"
+fieldType (FDouble _ _) = "Double"
 fieldType (FDefined _ _ (Ident typeName)) = typeName
 

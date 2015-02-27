@@ -10,26 +10,26 @@ mongoose.connect(args[1]);
 
 {{#schema}}
 
-var {{name}}Schema = new mongoose.Schema({
-    {{#Schemavar}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
-    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/Schemavar}}
+var {{schemaName}}Schema = new mongoose.Schema({
+    {{#schemaVars}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
+    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/schemaVars}}
 });
 
-var {{name}} = mongoose.model('{{name}}', {{name}}Schema);
+var {{schemaName}} = mongoose.model('{{schemaName}}', {{schemaName}}Schema);
 
-app.get('{{&route}}', function(req, res) {
-        {{name}}.find(function(err, result) {
-                        if (err) return console.error(err);
-                 res.send(result);
+app.get('{{&schemaRoute}}', function(req, res) {
+        {{schemaName}}.find(function(err, result) {
+          if (err) return console.error(err);
+            res.send(result);
          });
 });
 
-app.get('{{&route}}/:id', function(req, res) {
-  res.send({{name}}.find({ {{keyField}}: req.params.id}));
+app.get('{{&schemaRoute}}/:id', function(req, res) {
+  res.send({{schemaName}}.find({ {{keyField}}: req.params.id}));
 });
 
-app.put('{{&route}}', function(req, res) {
-  {{name}}.create(new {{name}}(req.body), function(err, post) {
+app.put('{{&schemaRoute}}', function(req, res) {
+  {{schemaName}}.create(new {{schemaName}}(req.body), function(err, post) {
     if (err) {
       res.json("{ \"result\": \"ERROR\", \"reason\": \"" + err + "\" }");
       return;
@@ -38,8 +38,8 @@ app.put('{{&route}}', function(req, res) {
   });
 });
 
-app.delete('{{&route}}/:id', function(req, res) {
-  {{name}}.remove({ {{keyField}}: req.params.id}, function(err, result) {
+app.delete('{{&schemaRoute}}/:id', function(req, res) {
+  {{schemaName}}.remove({ {{keyField}}: req.params.id}, function(err, result) {
       if (err) { 
         res.json("ERROR");
         return;

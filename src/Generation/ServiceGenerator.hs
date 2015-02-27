@@ -5,12 +5,13 @@ import           Language.Abs
 import           LangUtils
 -- | Creates a Service object from a Specification object.
 generateService :: Specification -> Service
-generateService (Spec _ _ _ structs resources) = Service $ map (generateSchema structs) resources
+generateService (Spec (Nm (Ident name)) (Ver (VerIdent version)) _ structs resources) =
+  Service name version $ map (generateSchema structs) resources
 
 generateSchema :: [StructType] -> Resource -> Schema
 generateSchema structs (DefResNoOp (Ident name') route' _) =
-  Schema { name = name'
-         , route = route'
+  Schema { schemaName = name'
+         , schemaRoute = route'
          , keyField = getKeyField struct
          , schemaVars = generateVars struct }
   where
