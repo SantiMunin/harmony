@@ -66,7 +66,7 @@ readAndCheckStructs strs knownTypes = F.forM_ strs structOk >> F.forM_ strs read
       structOk (DefStr _ fields) = F.forM_ fields fieldOk
 
       fieldOk :: Field -> StaticCheck()
-      fieldOk (FDefined _ (Ident name) _) = do
+      fieldOk (FDefined _ (Ident name) _) =
         unless (name `elem` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")
       fieldOk _ = return ()

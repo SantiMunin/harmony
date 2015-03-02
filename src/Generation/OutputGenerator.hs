@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Generation.OutputGenerator(TemplateInfo, createGenInfo, generateOutput) where
+module Generation.OutputGenerator(TemplateInfo, createGenInfo, GenerationInfo, generateOutput) where
 
 import           Control.Monad
 import           Data.List
@@ -17,10 +17,10 @@ createGenInfo :: [FilePath] -> [TemplateInfo] -> (Field -> String) -> Generation
 createGenInfo files' templates' fieldMapping' =
   GI { files = files', templates = templates', fieldMapping = fieldMapping' }
 
-generateOutput :: FilePath -> GenerationInfo -> Specification -> IO ()
-generateOutput outputPath genInfo spec = do
+generateOutput :: FilePath -> Specification -> GenerationInfo -> IO ()
+generateOutput outputPath spec genInfo = do
   forM_ (files genInfo) (copy outputPath)
-  forM_ (templates genInfo) (generateAndCopy outputPath $ generateServiceInfo spec (fieldMapping genInfo))
+  forM_ (templates genInfo) (generateAndCopy outputPath $ SG.generateService spec (fieldMapping genInfo))
 
 copy :: FilePath -> FilePath -> IO ()
 copy origin dest = do
@@ -36,7 +36,3 @@ generateAndCopy dest service (templatePath, newExt)  = do
     destFileWithoutExt = takeWhile (/= '.') $ dest ++ dropWhile (/= '/') templatePath
     destDir = take (last (elemIndices '/' destFile) + 1) destFile
     destFile = destFileWithoutExt ++ "." ++ newExt
-
-generateServiceInfo :: Specification -> (Field -> String) -> TC.Service
-generateServiceInfo fieldMapping = SG.generateService fieldMapping
-
