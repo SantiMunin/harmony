@@ -21,11 +21,15 @@ main = do
        _ -> error "Usage: harmony <source_file>"
   return ()
 
-  -- TODO: use flags to collect information for client and server, tests should be always the same
+-- TODO: use flags to collect information for client and server, tests should be always the same
 generateOutput :: Specification -> IO ()
-generateOutput = OG.generateOutput "/tmp/harmony_output" (OG.createGenInfo files templates)
+generateOutput = OG.generateOutput "/tmp/harmony_output" (OG.createGenInfo files templates fieldMapping)
   where
     files = []
     templates = [ ("templates/server/js/server.tpl", "js")
                 , ("templates/server/js/package.tpl", "json") ]
+    fieldMapping (FString _ _) = "String"
+    fieldMapping (FInt _ _) = "Number"
+    fieldMapping (FDouble _ _) = "Number"
+    fieldMapping _ = error "Custom types not implemented yet"
 
