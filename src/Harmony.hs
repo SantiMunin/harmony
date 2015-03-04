@@ -9,7 +9,7 @@ import           Language.Par
 import qualified StaticCheck                as SC
 import           System.Console.GetOpt
 import           System.Environment         (getArgs, getProgName)
-import           System.Exit                (exitFailure)
+import           System.Exit                (ExitCode (ExitFailure), exitWith)
 
 -- | Flags of the executable
 data Flag = Client String
@@ -54,6 +54,7 @@ parseArgs = do
         where
           isLanguageOutput (OutputDir _) = False
           isLanguageOutput _ = True
+    -- TODO: check if this should be another printUsageAndExitWithError call
     (_, _, errs) -> ioError (userError (concat errs ++ usage programName options))
 
 
@@ -89,5 +90,5 @@ printUsageAndExitWithError message progName options = do
     Just str -> putStrLn $ "ERROR: " ++ str ++ "\n"
     Nothing -> return ()
   putStrLn $ usage progName options
-  exitFailure
+  exitWith (ExitFailure 2)
 
