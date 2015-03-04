@@ -1,7 +1,7 @@
 module Main where
 
 import           Control.Monad              (forM_, unless)
-import           Data.Maybe                 (fromMaybe)
+import           Data.Maybe                 (fromJust)
 import qualified Generation.OutputGenerator as OG
 import           Language.Abs
 import           Language.ErrM
@@ -9,53 +9,57 @@ import           Language.Par
 import qualified StaticCheck                as SC
 import           System.Console.GetOpt
 import           System.Environment         (getArgs, getProgName)
-import           System.Exit                (exitSuccess)
+import           System.Exit                (exitFailure)
 
 -- | Flags of the executable
-data Flag = Client String | Server String deriving (Eq, Show)
+data Flag = Client String
+          | Server String
+          | OutputDir String
+          deriving (Eq, Show)
 
 -- | Definition of the flags expected by the executable
 options :: [OptDescr Flag]
 options = [ Option ['c'] ["client"]
-                   (OptArg clientp "CLIENT") "Desired output for the client (default: none)"
+                   (OptArg (Client . fromJust) "CLIENT") "Desired output for the client"
           , Option ['s'] ["server"]
-                   (OptArg serverp "SERVER") "Desired output for the server (default: node.js)"
+                   (OptArg (Server . fromJust) "SERVER") "Desired output for the server"
           ]
-  where
-    clientp, serverp :: Maybe String -> Flag
-    clientp = Client . fromMaybe ""
-    serverp = Server . fromMaybe "js"
 
 -- | Entry point, parses arguments, then the specification file and generates all the desired
 -- | outputs.
 main :: IO ()
 main = do
-  (inputFile, toGenerateList) <- parseArgs
+  (inputFile, outputPath, toGenerateList) <- parseArgs
   contents <- readFile inputFile
   case pSpecification (myLexer contents) of
     Bad err -> ioError (userError err)
     Ok tree -> case SC.staticCheck tree of
                  Bad err -> ioError (userError err)
-                 Ok _ -> generateOutput tree toGenerateList
+                 Ok _ -> generateOutput tree toGenerateList outputPath
   return ()
 
 -- | Parses the arguments and returns a list of outputs to generate.
-parseArgs :: IO (FilePath, [OG.GenerationInfo])
+parseArgs :: IO (FilePath, FilePath, [OG.GenerationInfo])
 parseArgs = do
   args <- getArgs
   programName <- getProgName
-  unless(length args >= 2) (printUsageAndExitWithError programName options)
 
   case getOpt Permute options args of
-    (flags, inputFile, []) -> do
-      unless (length inputFile == 1) (printUsageAndExitWithError programName options)
-      unless (not $ null flags) (ioError (userError "Select at least a client/server"))
-      return (head inputFile, map getGenInfo flags)
+    (flags, paths, []) -> do
+      unless (length paths == 2)
+             (printUsageAndExitWithError Nothing programName options)
+      unless (not $ null flags)
+             (printUsageAndExitWithError (Just "Select at least a client/server") programName options)
+      return (head paths, paths !! 1, map getGenInfo $ filter isLanguageOutput flags)
+        where
+          isLanguageOutput (OutputDir _) = False
+          isLanguageOutput _ = True
     (_, _, errs) -> ioError (userError (concat errs ++ usage programName options))
 
+
 -- | Generate all the output required.
-generateOutput :: Specification -> [OG.GenerationInfo] -> IO ()
-generateOutput spec genInfos = forM_ genInfos (OG.generateOutput "/tmp/harmony_output" spec)
+generateOutput :: Specification -> [OG.GenerationInfo] -> FilePath -> IO ()
+generateOutput spec genInfos outputPath = forM_ genInfos (OG.generateOutput outputPath spec)
 
 -- TODO: think about moving this to a different module to centralize the specification of all the
 -- implemented outputs.
@@ -76,9 +80,14 @@ getGenInfo other = error $ "Couldn't process " ++ show other ++ " flag."
 usage :: String -> [OptDescr Flag] -> String
 usage progName = usageInfo header
   where
-    header = "Usage: " ++ progName ++ " [OPTION...] input_file"
+    header = "Usage: " ++ progName ++ " [OPTION...] input_file output_path"
 
 -- | Prints usage and exits with error.
-printUsageAndExitWithError :: String -> [OptDescr Flag] -> IO ()
-printUsageAndExitWithError progName options = putStrLn progName options >> exitFailure 1
+printUsageAndExitWithError :: Maybe String -> String -> [OptDescr Flag] -> IO ()
+printUsageAndExitWithError message progName options = do
+  case message of
+    Just str -> putStrLn $ "ERROR: " ++ str ++ "\n"
+    Nothing -> return ()
+  putStrLn $ usage progName options
+  exitFailure
 
