@@ -28,7 +28,7 @@ data Target =
 defaultOptions :: Options
 defaultOptions = Options
   { targets = []
-  , outputDir = "."
+  , outputDir = "./harmony_output"
   }
 
 -- | Definition of the flags expected by the executable

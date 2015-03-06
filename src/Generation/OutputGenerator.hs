@@ -33,6 +33,8 @@ generateAndCopy dest service (templatePath, newExt)  = do
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output
   where
-    destFileWithoutExt = takeWhile (/= '.') $ dest ++ dropWhile (/= '/') templatePath
-    destDir = take (last (elemIndices '/' destFile) + 1) destFile
+    destFileWithoutExt = dest ++ (takeWhile (/= '.') $ dropWhile (/= '/') templatePath)
+    destDir =
+      let indices = elemIndices '/' destFile
+      in if null indices then "." else take (last indices + 1) destFile
     destFile = destFileWithoutExt ++ "." ++ newExt
