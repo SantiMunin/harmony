@@ -85,7 +85,7 @@ parseArgs = do
       return (head args, outputDir info, desiredOutputs)
         where
           info :: Options
-          info = foldl (\record f -> f record)  defaultOptions flags
+          info = foldl (flip ($))  defaultOptions flags
           desiredOutputs = map getGenInfo $ targets info
     -- TODO: check if this should be another printUsageAndExitWithError call
     (_, _, errs) -> ioError (userError (concat errs ++ usage programName options))
