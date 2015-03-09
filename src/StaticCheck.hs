@@ -1,6 +1,7 @@
 module StaticCheck (staticCheck) where
 
-import           Control.Arrow
+import qualified ApiSpec             as AS
+import           Control.Monad.State as CMS
 import           Data.Char
 import qualified Data.Foldable       as F
 import qualified Data.Map            as M
@@ -10,70 +11,99 @@ import           Language.Abs
 import           Language.ErrM
 import           LangUtils
 
-import           Control.Monad.State as CMS
+type Env = (S.Set String, AS.ApiSpec)
 
-data StateEnv = SEnv { enums     :: M.Map String [String]
-                     , structs   :: M.Map String [(String, String)]
-                     , resources :: M.Map String String
-                     }
+type StaticCheck a = StateT Env Err a
 
-type StaticCheck a = StateT StateEnv Err a
+-- | List of reserved words.
+reservedWords :: [String]
+-- TODO(18): complete list
+reservedWords = ["Int", "String", "Resource", "Enum", "Struct"]
 
-validAnnotations :: [String]
-validAnnotations = ["PK", "Hidden", "Fixed"]
-
-initialEnv :: StateEnv
-initialEnv = SEnv { enums = M.empty, structs = M.empty, resources = M.empty }
+-- | Initial environment (all empty).
+initialEnv :: Env
+initialEnv = (S.empty,
+              AS.AS { AS.enums = M.empty
+                    , AS.structs = M.empty
+                    , AS.resources = M.empty
+                    }
+             )
 
 -- | Checks the definition for:
 --   * Name clashes
 --   * Undefined types
-staticCheck :: Specification -> Err ()
-staticCheck (Spec _ _ enums structs resources) = evalStateT checkSeq initialEnv
+staticCheck :: Specification -> Err AS.ApiSpec
+staticCheck (Spec _ _ enums structs resources) = do
+  (_, s) <- runStateT checkSeq initialEnv
+  return $ snd s
   where
-    checkSeq = checkClashes enums structs
-            >> readAndCheckEnums enums
-            >> readAndCheckStructs structs (getPossibleFieldTypes enums structs)
-            >> checkResources resources
+    checkSeq = do
+      let customTypeNames = (getEnumNames enums) ++ (getStructNames structs)
+      checkClashes $ customTypeNames ++ reservedWords
+
+      CMS.modify (\(_, as) -> (S.fromList customTypeNames, as))
+      readAndCheckEnums enums
+      readAndCheckStructs structs
+      checkResources resources
 
 -- | Looks for name clashes in the definitions.
---  Note that it skips resources are those need to have the same name as some struct.
-checkClashes :: [EnumType] -> [StructType] -> StaticCheck ()
-checkClashes enums structs =
-  let duplicates = findDuplicatesInDefinitions enums structs in
+-- Note that it skips resources as those need to have the same name as some struct.
+checkClashes :: [String] -> StaticCheck ()
+checkClashes names =
+  let duplicates = findDuplicates names in
     case duplicates of
        Nothing -> return ()
        Just name ->
            fail $ "Name clash in declaration: "
                ++ name
-               ++ " is declared more than once."
+               ++ " is declared more than once (or it is a reserved word)."
 
--- | Check all enums, making sure there are not repeated values.
+-- | Reads all enums, making sure there are not repeated values.
 readAndCheckEnums :: [EnumType] -> StaticCheck ()
-readAndCheckEnums es = F.forM_ es checkEnumValues
+readAndCheckEnums es = F.forM_ es checkEnumValues >> F.forM_ es readEnum
   where
     checkEnumValues :: EnumType -> StaticCheck ()
-    checkEnumValues (DefEnum (Ident name) vals) = do
+    checkEnumValues (DefEnum _ vals) =
       let duplicates = findDuplicates (map enumValName vals) in
         unless (isNothing duplicates) (fail $ "Enum value defined more than once " ++ fromJust duplicates)
-      CMS.modify (\s -> s { enums = M.insert name (map enumValName vals) (enums s)})
+    readEnum :: EnumType -> StaticCheck ()
+    readEnum (DefEnum (Ident name) vals) =
+      CMS.modify (\(names, as) ->
+                     (names, as { AS.enums = M.insert name (map enumValName vals) (AS.enums as)}))
 
 -- | Makes sure all the types used in the struct definitions are valid.
-readAndCheckStructs :: [StructType] -> [String] -> StaticCheck ()
-readAndCheckStructs strs knownTypes = F.forM_ strs structOk >> F.forM_ strs readStruct
+readAndCheckStructs :: [StructType] -> StaticCheck ()
+readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
       structOk (DefStr _ fields) = F.forM_ fields fieldOk
 
-      fieldOk :: Field -> StaticCheck()
-      fieldOk (FDefined _ (Ident name) _) =
-        unless (name `elem` knownTypes)
+      fieldOk :: Field -> StaticCheck ()
+      fieldOk (FDefined _ (Ident name) _) = do
+        knownTypes <- CMS.gets fst
+        unless (name `S.member` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")
       fieldOk _ = return ()
 
       readStruct :: StructType -> StaticCheck ()
       readStruct (DefStr (Ident name) fields) =
-        CMS.modify (\s -> s { structs = M.insert name (map (fieldName &&& fieldType) fields) (structs s) })
+        CMS.modify (\(names, as) ->
+                     (names, as { AS.structs = M.insert name (map (readField as) fields) (AS.structs as)}))
+        where
+          readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
+                                            | map toLower name == "pk" = AS.PrimaryKey
+                                            | map toLower name == "immutable" = AS.Immutable
+                                            | map toLower name == "required" = AS.Required
+                                            | otherwise = error $ "Annotation " ++ name ++ " not recognized."
+          readField as (FDefined anns (Ident n) (Ident t)) = (n, getType as t, map readAnnotation anns)
+            where
+              getType env t | t `M.member` AS.enums env = AS.TEnum t
+                            | t `M.member` AS.structs env = AS.TStruct t
+                            | otherwise = error $ "getType: " ++ t ++ " is not defined."
+
+          readField _ (FString anns (Ident n)) = (n, AS.TString, map readAnnotation anns)
+          readField _ (FInt anns (Ident n)) = (n, AS.TInt, map readAnnotation anns)
+          readField _ (FDouble anns (Ident n)) = (n, AS.TDouble, map readAnnotation anns)
 
 -- | TODO
 checkResources :: [Resource] -> StaticCheck ()
@@ -82,10 +112,10 @@ checkResources ress = do
   F.forM_ ress addResource
   where
     resourceOk res = do
-      definedStructs <- CMS.gets structs
+      definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
       unless (resName res `M.member` definedStructs)
              (fail $ "Resource " ++ resName res ++ " does not refer to a defined struct.")
-    addResource res = CMS.modify (\s -> s { resources = M.insert (resRoute res) (resName res) (resources s)} )
+    addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resRoute res) (resName res) (AS.resources as)}))
 
 getEnumNames :: [EnumType] -> [String]
 getEnumNames = map enumName
@@ -95,16 +125,6 @@ getStructNames = map strName
 
 getResourceNames :: [Resource] -> [String]
 getResourceNames = map resName
-
-getPossibleFieldTypes :: [EnumType] -> [StructType] -> [String]
-getPossibleFieldTypes enums structs = getEnumNames enums ++ getStructNames structs
-
-findDuplicatesInDefinitions :: [EnumType] -> [StructType] -> Maybe String
-findDuplicatesInDefinitions enums structs =
-  findDuplicates $ enumNames ++ structNames
-  where
-    enumNames = getEnumNames enums
-    structNames = getStructNames structs
 
 findDuplicates :: [String] -> Maybe String
 findDuplicates list = go list S.empty S.empty
