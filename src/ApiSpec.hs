@@ -46,10 +46,12 @@ type Enums = M.Map Id EnumInfo
 
 type Structs = M.Map Id StructInfo
 
-type Resources = M.Map Route Id
+type Resources = M.Map Id Route
 
 -- | The spec of an api is a set of enums and structs, along with the resources.
-data ApiSpec = AS { enums     :: Enums
+data ApiSpec = AS { name      :: String
+                  , version   :: String
+                  , enums     :: Enums
                   , structs   :: Structs
                   , resources :: Resources }
 
@@ -58,7 +60,7 @@ getPrimaryKey :: StructInfo -> Id
 getPrimaryKey structInfo =
   case filter hasPkModifier structInfo of
     [(x, _, _)] -> x
-    _ -> error "A struct should only have one primary key."
+    _ -> error "A struct should have one (and only one) primary key."
   where
     hasPkModifier (_, _, modifiers) = PrimaryKey `elem` modifiers
 

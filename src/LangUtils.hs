@@ -2,6 +2,12 @@ module LangUtils where
 
 import           Language.Abs
 
+specName :: Specification -> String
+specName (Spec (Nm (Ident n)) _ _ _ _) = n
+
+specVersion :: Specification -> String
+specVersion (Spec _(Ver (VerIdent v)) _ _ _) = v
+
 enumName :: EnumType -> String
 enumName (DefEnum (Ident name) _) = name
 

@@ -23,7 +23,9 @@ reservedWords = ["Int", "String", "Resource", "Enum", "Struct"]
 -- | Initial environment (all empty).
 initialEnv :: Env
 initialEnv = (S.empty,
-              AS.AS { AS.enums = M.empty
+              AS.AS { AS.name = ""
+                    , AS.version = ""
+                    , AS.enums = M.empty
                     , AS.structs = M.empty
                     , AS.resources = M.empty
                     }
@@ -33,11 +35,12 @@ initialEnv = (S.empty,
 --   * Name clashes
 --   * Undefined types
 staticCheck :: Specification -> Err AS.ApiSpec
-staticCheck (Spec _ _ enums structs resources) = do
+staticCheck spec@(Spec _ _ enums structs resources) = do
   (_, s) <- runStateT checkSeq initialEnv
   return $ snd s
   where
     checkSeq = do
+      CMS.modify (\(n, s) -> (n, s { AS.name = specName spec, AS.version = specVersion spec }))
       let customTypeNames = getEnumNames enums ++ getStructNames structs
       checkClashes $ customTypeNames ++ reservedWords
 
@@ -115,7 +118,7 @@ checkResources ress = do
       definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
       unless (resName res `M.member` definedStructs)
              (fail $ "Resource " ++ resName res ++ " does not refer to a defined struct.")
-    addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resRoute res) (resName res) (AS.resources as)}))
+    addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resName res) (resRoute res) (AS.resources as)}))
 
 getEnumNames :: [EnumType] -> [String]
 getEnumNames = map enumName

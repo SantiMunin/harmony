@@ -1,9 +1,9 @@
 module Main where
 
+import qualified ApiSpec                    as AS
 import           Control.Monad              (forM_, unless)
 import           Data.Maybe                 (fromJust)
 import qualified Generation.OutputGenerator as OG
-import           Language.Abs
 import           Language.ErrM
 import           Language.Par
 import qualified StaticCheck                as SC
@@ -67,7 +67,7 @@ main = do
     Bad err -> ioError (userError err)
     Ok tree -> case SC.staticCheck tree of
                  Bad err -> ioError (userError err)
-                 Ok _ -> generateOutput tree toGenerateList outputPath
+                 Ok env -> generateOutput env toGenerateList outputPath
   return ()
 
 -- | Parses the arguments and returns a list of outputs to generate.
@@ -91,8 +91,8 @@ parseArgs = do
     (_, _, errs) -> ioError (userError (concat errs ++ usage programName options))
 
 -- | Generate all the output required.
-generateOutput :: Specification -> [OG.GenerationInfo] -> FilePath -> IO ()
-generateOutput spec genInfos outputPath = forM_ genInfos (OG.generateOutput outputPath spec)
+generateOutput :: AS.ApiSpec -> [OG.GenerationInfo] -> FilePath -> IO ()
+generateOutput apiSpec genInfos outputPath = forM_ genInfos (OG.generateOutput outputPath apiSpec)
 
 -- TODO: think about moving this to a different module to centralize the specification of all the
 -- implemented outputs.
@@ -103,9 +103,9 @@ getGenInfo SJavascript = OG.createGenInfo files templates fieldMapping
     files = []
     templates = [ ("templates/server/js/server.tpl", "js")
                 , ("templates/server/js/package.tpl", "json") ]
-    fieldMapping (FString _ _) = "String"
-    fieldMapping (FInt _ _) = "Number"
-    fieldMapping (FDouble _ _) = "Number"
+    fieldMapping AS.TString = "String"
+    fieldMapping AS.TInt = "Number"
+    fieldMapping AS.TDouble = "Number"
     fieldMapping _ = error "Custom types not implemented yet"
 getGenInfo other = error $ "Couldn't process " ++ show other ++ " flag."
 

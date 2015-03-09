@@ -1,43 +1,37 @@
 module Generation.ServiceGenerator(generateService) where
 
-import           Generation.TemplateCompiler
-import           Language.Abs
+import qualified ApiSpec                     as AS
+import qualified Data.Map                    as M
+import           Data.Maybe                  (fromJust, fromMaybe)
+import qualified Generation.TemplateCompiler as TC
 import           LangUtils
 
 -- | Creates a Service object from a Specification object.
-generateService :: Specification -> (Field -> String) -> Service
-generateService (Spec (Nm (Ident name)) (Ver (VerIdent version)) _ structs resources) fieldMapping =
-  Service name version $ map (generateSchema fieldMapping structs) resources
+generateService :: AS.ApiSpec -> (AS.Type -> String) -> TC.Service
+generateService apiSpec fieldMapping =
+  TC.Service (AS.name apiSpec)
+             (AS.version apiSpec)
+             $ map (generateSchema fieldMapping apiSpec) (M.keys $ AS.resources apiSpec)
 
-generateSchema :: (Field -> String) -> [StructType] -> Resource -> Schema
-generateSchema fieldMapping structs (DefResNoOp (Ident name') route' _) =
-  Schema { schemaName = name'
-         , schemaRoute = route'
-         , keyField = getKeyField struct
-         , schemaVars = generateVars fieldMapping struct }
+generateSchema :: (AS.Type -> String) -> AS.ApiSpec -> AS.Id -> TC.Schema
+generateSchema fieldMapping apiSpec resId =
+  TC.Schema { TC.schemaName = resId
+            , TC.schemaRoute = fromJust $ M.lookup resId $ AS.resources apiSpec
+            , TC.keyField = AS.getPrimaryKey structInfo
+            , TC.schemaVars = generateVars fieldMapping structInfo }
   where
-    struct = head $ filter (\str -> strName str == name') structs
-    getKeyField :: StructType -> String
-    getKeyField (DefStr _ fields) = fieldName $ head $ filter (isPk . fieldAnnotations) fields
+    structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
 
-generateVars :: (Field -> String) -> StructType -> [SchemaVar]
-generateVars fieldMapping (DefStr _ fields) = map getVarFromField fields
+generateVars :: (AS.Type -> String) -> AS.StructInfo -> [TC.SchemaVar]
+generateVars fieldMapping = map getVarFromField
   where
-    getVarFromField field = generateSchemaVar (fieldName field) (fieldMapping field) (fieldAnnotations field)
+    getVarFromField :: AS.FieldInfo -> TC.SchemaVar
+    getVarFromField (n, t, modifs) = generateSchemaVar n t modifs
     -- TODO(6): implement custom fields
-    generateSchemaVar :: String -> String -> [Annotation] -> SchemaVar
-    generateSchemaVar name type' annotations =
-      SchemaVar { varName = name
-                , varType = type'
-                , isKey = isPk annotations
-                , isRequired = isRequiredField annotations }
-
-containsAnnotation :: String -> [Annotation] -> Bool
-containsAnnotation name = any (\(Ann (Ident annName)) -> annName == name)
-
-isPk :: [Annotation] -> Bool
-isPk = containsAnnotation "PK"
-
-isRequiredField :: [Annotation] -> Bool
-isRequiredField = containsAnnotation "Required"
+    generateSchemaVar :: AS.Id -> AS.Type -> [AS.Modifier] -> TC.SchemaVar
+    generateSchemaVar name type' modifs =
+      TC.SchemaVar { TC.varName = name
+                   , TC.varType = fieldMapping type'
+                   , TC.isKey = AS.PrimaryKey `elem` modifs
+                   , TC.isRequired = AS.Required `elem` modifs }
 
