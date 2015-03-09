@@ -38,7 +38,7 @@ staticCheck (Spec _ _ enums structs resources) = do
   return $ snd s
   where
     checkSeq = do
-      let customTypeNames = (getEnumNames enums) ++ (getStructNames structs)
+      let customTypeNames = getEnumNames enums ++ getStructNames structs
       checkClashes $ customTypeNames ++ reservedWords
 
       CMS.modify (\(_, as) -> (S.fromList customTypeNames, as))
