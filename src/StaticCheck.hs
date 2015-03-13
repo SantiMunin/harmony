@@ -79,7 +79,17 @@ readAndCheckStructs :: [StructType] -> StaticCheck ()
 readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
-      structOk (DefStr _ fields) = F.forM_ fields fieldOk
+      structOk (DefStr _ fields) = do
+        names <- CMS.gets fst
+        checkAttributeClashes fields (names `S.union` (S.fromList reservedWords))
+        F.forM_ fields fieldOk
+
+      checkAttributeClashes :: [Field] -> S.Set String -> StaticCheck (S.Set String)
+      checkAttributeClashes fields alreadySeen = do
+        F.foldlM (\names name ->
+          if name `S.member` names
+          then fail $ "a"
+          else return $ name `S.insert` names) alreadySeen (map fieldName fields)
 
       fieldOk :: Field -> StaticCheck ()
       fieldOk (FDefined _ (Ident name) _) = do
