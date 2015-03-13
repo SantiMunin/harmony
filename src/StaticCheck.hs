@@ -122,9 +122,14 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
 -- | TODO
 checkResources :: [Resource] -> StaticCheck ()
 checkResources ress = do
+  checkDifferentRoutes ress
   F.forM_ ress resourceOk
   F.forM_ ress addResource
   where
+    checkDifferentRoutes ress =
+      case findDuplicates (map resRoute ress) of
+           Nothing -> return ()
+           (Just repeated) -> fail $ "Route " ++ repeated ++ " is defined more than once"
     resourceOk res = do
       definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
       unless (resName res `M.member` definedStructs)
