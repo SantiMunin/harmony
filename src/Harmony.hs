@@ -6,6 +6,7 @@ import           Data.Maybe                 (fromJust)
 import qualified Generation.OutputGenerator as OG
 import           Language.ErrM
 import           Language.Par
+import qualified OutputSelection            as OS
 import qualified StaticCheck                as SC
 import           System.Console.GetOpt
 import           System.Environment         (getArgs, getProgName)
@@ -13,17 +14,9 @@ import           System.Exit                (ExitCode (ExitFailure), exitWith)
 
 -- | Flags of the executable
 data Options = Options
-  { targets   :: [Target]
+  { targets   :: [OS.Target]
   , outputDir :: FilePath
   } deriving Show
-
--- | Supported implementations (the preffix 'C' stands for 'Client' where as 'S' stands for
--- 'Server').
-data Target =
-    CPython
-  | CJavascript
-  | SJavascript
-  deriving Show
 
 defaultOptions :: Options
 defaultOptions = Options
@@ -48,12 +41,12 @@ options = [ Option ['c'] ["client"]
           ]
 
 -- | Parse flag input
-parseClient, parseServer :: Maybe String -> Target
-parseClient (Just "js") = CJavascript
-parseClient (Just "python") = CPython
+parseClient, parseServer :: Maybe String -> OS.Target
+parseClient (Just "js") = OS.CJavascript
+parseClient (Just "python") = OS.CPython
 parseClient (Just other) = error $ "Could not parse client: " ++ other
 parseClient Nothing = error "parseClient: not expected Nothing as flag"
-parseServer (Just "js") = SJavascript
+parseServer (Just "js") = OS.SJavascript
 parseServer (Just other) = error $ "Could not parse server" ++ other
 parseServer Nothing = error "parseServer: not expected Nothing as flag"
 
@@ -86,28 +79,13 @@ parseArgs = do
         where
           info :: Options
           info = foldl (flip ($))  defaultOptions flags
-          desiredOutputs = map getGenInfo $ targets info
+          desiredOutputs = map OS.getGenInfo $ targets info
     -- TODO: check if this should be another printUsageAndExitWithError call
     (_, _, errs) -> ioError (userError (concat errs ++ usage programName options))
 
 -- | Generate all the output required.
 generateOutput :: AS.ApiSpec -> [OG.GenerationInfo] -> FilePath -> IO ()
 generateOutput apiSpec genInfos outputPath = forM_ genInfos (OG.generateOutput outputPath apiSpec)
-
--- TODO: think about moving this to a different module to centralize the specification of all the
--- implemented outputs.
--- | Maps flags to generation information.
-getGenInfo :: Target -> OG.GenerationInfo
-getGenInfo SJavascript = OG.createGenInfo files templates fieldMapping
-  where
-    files = []
-    templates = [ ("templates/server/js/server.tpl", "js")
-                , ("templates/server/js/package.tpl", "json") ]
-    fieldMapping AS.TString = "String"
-    fieldMapping AS.TInt = "Number"
-    fieldMapping AS.TDouble = "Number"
-    fieldMapping _ = error "Custom types not implemented yet"
-getGenInfo other = error $ "Couldn't process " ++ show other ++ " flag."
 
 -- | Generates the usage message.
 usage :: String -> [OptDescr (Options -> Options)] -> String
