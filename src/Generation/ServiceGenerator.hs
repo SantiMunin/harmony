@@ -2,9 +2,8 @@ module Generation.ServiceGenerator(generateService) where
 
 import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
-import           Data.Maybe                  (fromJust, fromMaybe)
+import           Data.Maybe                  (fromJust)
 import qualified Generation.TemplateCompiler as TC
-import           LangUtils
 
 -- | Creates a Service object from a Specification object.
 generateService :: AS.ApiSpec -> (AS.Type -> String) -> TC.Service
