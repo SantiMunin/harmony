@@ -22,4 +22,14 @@ getGenInfo SJavascript = OG.createGenInfo files templates fieldMapping
     fieldMapping AS.TInt = "Number"
     fieldMapping AS.TDouble = "Number"
     fieldMapping _ = error "Custom types not implemented yet"
+getGenInfo CPython = OG.createGenInfo files templates fieldMapping
+  where
+    files = []
+    templates = [("templates/client/python/client.tpl", "py")]
+    -- Dummy values so an error can be detected after serialization
+    fieldMapping AS.TString = "error:PythonNoTypes (String)"
+    fieldMapping AS.TInt = "error:PythonNoTypes (Int)"
+    fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
+    fieldMapping _ = error "Custom types not implemented yet"
+
 getGenInfo other = error $ "Couldn't process " ++ show other ++ " flag."

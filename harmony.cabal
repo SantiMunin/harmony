@@ -35,9 +35,10 @@ maintainer:          santimunin@gmail.com
 category:            Development
 
 build-type:          Custom
+data-files:          templates/server/js/package.tpl
+                   , templates/server/js/server.tpl
+                   , templates/client/python/client.tpl
 
-data-files:          templates/server/js/server.tpl
-                   , templates/server/js/package.tpl
 
 -- Extra files to be distributed with the package, such as examples or a 
 -- README.

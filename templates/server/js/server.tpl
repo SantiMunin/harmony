@@ -9,7 +9,6 @@ app.use(bodyParser.json());
 mongoose.connect(args[1]);
 
 {{#schema}}
-
 var {{schemaName}}Schema = new mongoose.Schema({
     {{#schemaVars}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
     dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/schemaVars}}
@@ -25,7 +24,10 @@ app.get('{{&schemaRoute}}', function(req, res) {
 });
 
 app.get('{{&schemaRoute}}/:id', function(req, res) {
-  res.send({{schemaName}}.find({ {{keyField}}: req.params.id}));
+        {{schemaName}}.find({ {{keyField}}: req.params.id }, function(err, result) {
+          if (err) return console.error(err);
+            res.send(result);
+         });
 });
 
 app.put('{{&schemaRoute}}', function(req, res) {
