@@ -79,10 +79,11 @@ readAndCheckStructs :: [StructType] -> StaticCheck ()
 readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
-      structOk (DefStr _ fields) = do
+      structOk (DefStr (Ident strName) fields) = do
         names <- CMS.gets fst
         checkAttributeClashes fields (names `S.union` S.fromList reservedWords)
         F.forM_ fields fieldOk
+        checkHasPk strName fields
 
       checkAttributeClashes :: [Field] -> S.Set String -> StaticCheck (S.Set String)
       checkAttributeClashes fields alreadySeen =
@@ -99,25 +100,29 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
                (fail $ "The type (" ++ name ++ ") was not defined.")
       fieldOk _ = return ()
 
+      checkHasPk :: String -> [Field] -> StaticCheck ()
+      checkHasPk strName fields =
+        unless ((length $ filter ((==AS.PrimaryKey) . readAnnotation) $ concatMap fieldAnnotations fields) == 1)
+               (fail $ strName ++ " Primary Key annotation (@PK) is missing of defined more than once")
+
       readStruct :: StructType -> StaticCheck ()
       readStruct (DefStr (Ident name) fields) =
         CMS.modify (\(names, as) ->
                      (names, as { AS.structs = M.insert name (map (readField as) fields) (AS.structs as)}))
+      readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
+                                        | map toLower name == "pk" = AS.PrimaryKey
+                                        | map toLower name == "immutable" = AS.Immutable
+                                        | map toLower name == "required" = AS.Required
+                                        | otherwise = error $ "Annotation " ++ name ++ " not recognized."
+      readField as (FDefined anns (Ident n) (Ident t)) = (n, getType as t, map readAnnotation anns)
         where
-          readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
-                                            | map toLower name == "pk" = AS.PrimaryKey
-                                            | map toLower name == "immutable" = AS.Immutable
-                                            | map toLower name == "required" = AS.Required
-                                            | otherwise = error $ "Annotation " ++ name ++ " not recognized."
-          readField as (FDefined anns (Ident n) (Ident t)) = (n, getType as t, map readAnnotation anns)
-            where
-              getType env t | t `M.member` AS.enums env = AS.TEnum t
-                            | t `M.member` AS.structs env = AS.TStruct t
-                            | otherwise = error $ "getType: " ++ t ++ " is not defined."
+          getType env t | t `M.member` AS.enums env = AS.TEnum t
+                        | t `M.member` AS.structs env = AS.TStruct t
+                        | otherwise = error $ "getType: " ++ t ++ " is not defined."
 
-          readField _ (FString anns (Ident n)) = (n, AS.TString, map readAnnotation anns)
-          readField _ (FInt anns (Ident n)) = (n, AS.TInt, map readAnnotation anns)
-          readField _ (FDouble anns (Ident n)) = (n, AS.TDouble, map readAnnotation anns)
+      readField _ (FString anns (Ident n)) = (n, AS.TString, map readAnnotation anns)
+      readField _ (FInt anns (Ident n)) = (n, AS.TInt, map readAnnotation anns)
+      readField _ (FDouble anns (Ident n)) = (n, AS.TDouble, map readAnnotation anns)
 
 -- | TODO
 checkResources :: [Resource] -> StaticCheck ()
