@@ -14,6 +14,23 @@ var {{schemaName}}Schema = new mongoose.Schema({
     dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/schemaVars}}
 });
 
+{{schemaName}}Schema.set('toJSON', {
+  transform: function (doc, ret, options) {
+    {{^hasKeyField}}ret.id = ret._id{{/hasKeyField}}
+    delete ret._id
+    delete ret.__v
+  }
+});
+
+{{^hasKeyField}}
+{{schemaName}}Schema.set('toObject', {
+  transform : function (doc, ret, options) {
+    ret_id = ret.id
+    delete ret.id
+  }
+});
+{{/hasKeyField}}
+
 var {{schemaName}} = mongoose.model('{{schemaName}}', {{schemaName}}Schema);
 
 app.get('{{&schemaRoute}}', function(req, res) {
