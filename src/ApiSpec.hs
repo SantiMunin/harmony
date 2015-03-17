@@ -55,12 +55,13 @@ data ApiSpec = AS { name      :: String
                   , structs   :: Structs
                   , resources :: Resources }
 
--- | Gets the primary key of a struct.
-getPrimaryKey :: StructInfo -> Id
+-- | Gets the primary key of a struct if it was specified.
+getPrimaryKey :: StructInfo -> Maybe Id
 getPrimaryKey structInfo =
   case filter hasPkModifier structInfo of
-    [(x, _, _)] -> x
-    _ -> error "A struct should have one (and only one) primary key."
+    [] -> Nothing
+    [(x, _, _)] -> Just x
+    _ -> error "A struct should have at most one specified primary key."
   where
     hasPkModifier (_, _, modifiers) = PrimaryKey `elem` modifiers
 

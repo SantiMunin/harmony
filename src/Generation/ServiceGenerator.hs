@@ -2,7 +2,7 @@ module Generation.ServiceGenerator(generateService) where
 
 import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
-import           Data.Maybe                  (fromJust)
+import           Data.Maybe                  (fromJust, fromMaybe, isJust)
 import qualified Generation.TemplateCompiler as TC
 
 -- | Creates a Service object from a Specification object.
@@ -16,10 +16,14 @@ generateSchema :: (AS.Type -> String) -> AS.ApiSpec -> AS.Id -> TC.Schema
 generateSchema fieldMapping apiSpec resId =
   TC.Schema { TC.schemaName = resId
             , TC.schemaRoute = fromJust $ M.lookup resId $ AS.resources apiSpec
-            , TC.keyField = AS.getPrimaryKey structInfo
+            , TC.hasKeyField = hasKeyField
+            , TC.keyField = keyField
             , TC.schemaVars = generateVars fieldMapping structInfo }
   where
     structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
+    maybeKeyField = AS.getPrimaryKey structInfo
+    keyField = fromMaybe ("" :: AS.Id) maybeKeyField
+    hasKeyField = isJust maybeKeyField
 
 generateVars :: (AS.Type -> String) -> AS.StructInfo -> [TC.SchemaVar]
 generateVars fieldMapping = map getVarFromField

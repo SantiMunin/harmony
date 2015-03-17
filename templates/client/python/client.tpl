@@ -1,7 +1,6 @@
 import requests, json
 
 {{#schema}}
-
 class {{schemaName}}:
 
     def __init__(self, info):

@@ -24,7 +24,7 @@ app.get('{{&schemaRoute}}', function(req, res) {
 });
 
 app.get('{{&schemaRoute}}/:id', function(req, res) {
-        {{schemaName}}.find({ {{keyField}}: req.params.id }, function(err, result) {
+        {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id }, function(err, result) {
           if (err) return console.error(err);
             res.send(result);
          });
@@ -41,7 +41,7 @@ app.put('{{&schemaRoute}}', function(req, res) {
 });
 
 app.delete('{{&schemaRoute}}/:id', function(req, res) {
-  {{schemaName}}.remove({ {{keyField}}: req.params.id}, function(err, result) {
+  {{schemaName}}.remove({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id}, function(err, result) {
       if (err) { 
         res.json("ERROR");
         return;

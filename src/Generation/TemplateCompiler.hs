@@ -16,6 +16,7 @@ data SchemaVar = SchemaVar { varName    :: String
 
 data Schema = Schema { schemaName  :: String
                      , schemaRoute :: String
+                     , hasKeyField :: Bool
                      , keyField    :: String
                      , schemaVars  :: [SchemaVar] } deriving (Show, Data, Typeable)
 

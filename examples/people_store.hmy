@@ -1,0 +1,9 @@
+service_name: PeopleStoreService
+service_version: 1.0.0
+
+struct Person {
+  name : String,
+  age  : Int
+}
+
+resource Person ("/person")
