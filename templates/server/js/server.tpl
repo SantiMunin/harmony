@@ -51,6 +51,21 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
          });
 });
 
+app.post('{{&schemaRoute}}', function(req, res) {
+  {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.body.{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}} }, function(err, result) {
+    if (err) return console.error(err);
+      if (result.length == 0) {
+        {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
+          res
+            .status(201)
+            .json('{"{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}}" : "obj.{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}"');
+        });
+      } else {
+        res.status(303).location("{{&schemaRoute}}/" + result[0].{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}}).send();
+      }
+  });
+});
+
 app.put('{{&schemaRoute}}', function(req, res) {
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, post) {
     if (err) {
