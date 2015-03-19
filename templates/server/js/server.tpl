@@ -74,10 +74,10 @@ app.put('{{&schemaRoute}}/:id', function(req, res) {
 app.delete('{{&schemaRoute}}/:id', function(req, res) {
   {{schemaName}}.remove({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id}, function(err, result) {
       if (err) { 
-        res.json("ERROR");
+        res.status(500).send(err);
         return;
     }});
-    res.json("OK");
+    res.status(200);
 });
 {{/schema}}
 
