@@ -124,7 +124,6 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
       readField _ (FInt anns (Ident n)) = (n, AS.TInt, map readAnnotation anns)
       readField _ (FDouble anns (Ident n)) = (n, AS.TDouble, map readAnnotation anns)
 
--- | TODO
 checkResources :: [Resource] -> StaticCheck ()
 checkResources ress = do
   checkDifferentRoutes ress
@@ -133,7 +132,9 @@ checkResources ress = do
   where
     checkDifferentRoutes ress =
       case findDuplicates (map resRoute ress) of
-           Nothing -> return ()
+           Nothing -> case findDuplicates (map resName ress) of
+                        Nothing -> return ()
+                        (Just repeated') -> fail $ "Struct " ++ repeated' ++ " is referred more than once by a resource."
            (Just repeated) -> fail $ "Route " ++ repeated ++ " is defined more than once"
     resourceOk res = do
       definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
@@ -146,9 +147,6 @@ getEnumNames = map enumName
 
 getStructNames :: [StructType] -> [String]
 getStructNames = map strName
-
-getResourceNames :: [Resource] -> [String]
-getResourceNames = map resName
 
 findDuplicates :: [String] -> Maybe String
 findDuplicates list = go list S.empty S.empty

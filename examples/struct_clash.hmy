@@ -1,0 +1,8 @@
+service_name: RepeatedRoute
+service_version: 1.0.0
+
+struct Str1 { name : String }
+
+resource Str1 ("/res")
+resource Str1 ("/res2")
+
