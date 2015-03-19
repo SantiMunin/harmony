@@ -51,28 +51,23 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
          });
 });
 
+{{^hasKeyField}}
 app.post('{{&schemaRoute}}', function(req, res) {
-  {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.body.{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}} }, function(err, result) {
-    if (err) return console.error(err);
-      if (result.length == 0) {
-        {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
-          res
-            .status(201)
-            .json('{"{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}}" : "obj.{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}"');
-        });
-      } else {
-        res.status(303).location("{{&schemaRoute}}/" + result[0].{{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}id{{/hasKeyField}}).send();
-      }
-  });
+  {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
+    res
+      .status(201)
+      .json('{"id" : "'+obj._id+'"}');
+   });
 });
+{{/hasKeyField}}
 
-app.put('{{&schemaRoute}}', function(req, res) {
-  {{schemaName}}.create(new {{schemaName}}(req.body), function(err, post) {
+app.put('{{&schemaRoute}}/:id', function(req, res) {
+  {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true}, function(err, result) {
     if (err) {
-      res.json("{ \"result\": \"ERROR\", \"reason\": \"" + err + "\" }");
-      return;
+      res.status(500).send();
+    } else {
+      res.status(200).send();
     }
-    res.json("OK");
   });
 });
 
@@ -84,7 +79,6 @@ app.delete('{{&schemaRoute}}/:id', function(req, res) {
     }});
     res.json("OK");
 });
-
 {{/schema}}
 
 app.listen(args[0]);

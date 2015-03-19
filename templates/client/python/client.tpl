@@ -14,12 +14,13 @@ class {{schemaName}}:
         return json.dumps(self._info)
 
 {{#schemaVars}}
+{{^isKey}}
     def get_{{varName}}(self):
         return self._info["{{varName}}"]
 
     def set_{{varName}}(self, {{varName}}):
         self._info["{{varName}}"] = {{varName}}
-
+{{/isKey}}
 {{/schemaVars}}
 {{/schema}}
 
@@ -30,12 +31,13 @@ def get{{schemaName}}_list(url):
 def get{{schemaName}}(url, item_id):
     return requests.get(url + "{{&schemaRoute}}" + "/" + item_id)
 
-def put{{schemaName}}(url, item):
-    return requests.put(url + "{{&schemaRoute}}", data=item.toJSON(), headers = {'content-type': 'application/json'})
+def put{{schemaName}}(url, item_id, item):
+    return requests.put(url + "{{&schemaRoute}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})
 
+{{^hasKeyField}}
 def post{{schemaName}}(url, item):
     return requests.post(url + "{{&schemaRoute}}", data=item.toJSON(), headers = {'content-type': 'application/json'})
-
+{{/hasKeyField}}
 def delete{{schemaName}}(url, item_id):
     return requests.delete(url + "{{&schemaRoute}}" + "/" + item_id)
 {{/schema}}
