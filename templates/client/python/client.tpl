@@ -30,7 +30,7 @@ def get{{schemaName}}_list(url):
 
 def get{{schemaName}}(url, item_id):
     return requests.get(url + "{{&schemaRoute}}" + "/" + item_id)
-
+{{#writable}}
 def put{{schemaName}}(url, item_id, item):
     return requests.put(url + "{{&schemaRoute}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})
 
@@ -40,4 +40,5 @@ def post{{schemaName}}(url, item):
 {{/hasKeyField}}
 def delete{{schemaName}}(url, item_id):
     return requests.delete(url + "{{&schemaRoute}}" + "/" + item_id)
+{{/writable}}
 {{/schema}}

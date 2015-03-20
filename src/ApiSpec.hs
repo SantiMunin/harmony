@@ -46,7 +46,9 @@ type Enums = M.Map Id EnumInfo
 
 type Structs = M.Map Id StructInfo
 
-type Resources = M.Map Id Route
+type Resources = M.Map Id (Route, Writable)
+
+type Writable = Bool
 
 -- | The spec of an api is a set of enums and structs, along with the resources.
 data ApiSpec = AS { name      :: String

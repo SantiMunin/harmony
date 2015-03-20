@@ -24,10 +24,13 @@ strFields :: StructType -> [Field]
 strFields (DefStr _ fields) = fields
 
 resName :: Resource -> String
-resName (DefResNoOp (Ident name) _ _) = name
+resName (Res (Ident name) _ _) = name
 
 resRoute :: Resource -> String
-resRoute (DefResNoOp _ route _) = route
+resRoute (Res _ route _) = route
+
+resIsWritable :: Resource -> Bool
+resIsWritable (Res _ _ mode) = mode == Write
 
 fieldName :: Field -> String
 fieldName (FString _ (Ident name)) = name

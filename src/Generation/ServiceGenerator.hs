@@ -15,11 +15,13 @@ generateService apiSpec fieldMapping =
 generateSchema :: (AS.Type -> String) -> AS.ApiSpec -> AS.Id -> TC.Schema
 generateSchema fieldMapping apiSpec resId =
   TC.Schema { TC.schemaName = resId
-            , TC.schemaRoute = fromJust $ M.lookup resId $ AS.resources apiSpec
+            , TC.schemaRoute = schemaRoute'
+            , TC.writable = writable'
             , TC.hasKeyField = hasKeyField
             , TC.keyField = keyField
             , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
   where
+    (schemaRoute', writable') = fromJust $ M.lookup resId $ AS.resources apiSpec
     structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
     keyField = fromMaybe ("" :: AS.Id) maybeKeyField

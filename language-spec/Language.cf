@@ -1,30 +1,28 @@
 comment "//" ;
 comment "/*" "*/" ;
 
-Spec.        Specification    ::= Name Version [EnumType] [StructType] [Resource]; 
+Spec.         Specification ::= Name Version [EnumType] [StructType] [Resource]; 
 
-Nm.          Name         ::= "service_name" ":" Ident;
-Ver.         Version      ::= "service_version" ":" VerIdent;
-DefEnum.     EnumType     ::= "enum" Ident "{" [EnumVal] "}";
-DefStr.      StructType   ::= "struct" Ident "{" [Field] "}";
-DefResNoOp.  Resource     ::= "resource" Ident "(" String ")" OpFilter; 
-FilterEmpty. OpFilter     ::= ;
-FilterOp.    OpFilter     ::= "{" [Op] "}";
+Nm.           Name          ::= "service_name" ":" Ident;
+Ver.          Version       ::= "service_version" ":" VerIdent;
+DefEnum.      EnumType      ::= "enum" Ident "{" [EnumVal] "}";
+DefStr.       StructType    ::= "struct" Ident "{" [Field] "}";
+Res.          Resource      ::= "resource" Ident "(" String ")" Mode; 
+ReadOnly.     Mode          ::= "read_only";
+Write.        Mode          ::= ; 
 
-OpGet.       Op           ::= "GET";
-FString.     Field        ::= [Annotation] Ident ":" "String";
-FInt.        Field        ::= [Annotation] Ident ":" "Int";
-FDouble.     Field        ::= [Annotation] Ident ":" "Double";
-FDefined.    Field        ::= [Annotation] Ident ":" Ident;
-Ann.         Annotation   ::= "@" Ident;
-EnVal.       EnumVal      ::= Ident;
+FString.      Field         ::= [Annotation] Ident ":" "String";
+FInt.         Field         ::= [Annotation] Ident ":" "Int";
+FDouble.      Field         ::= [Annotation] Ident ":" "Double";
+FDefined.     Field         ::= [Annotation] Ident ":" Ident;
+Ann.          Annotation    ::= "@" Ident;
+EnVal.        EnumVal       ::= Ident;
 
 
 separator EnumType "";
 separator nonempty Field ",";
 separator nonempty StructType "";
 separator nonempty Resource "";
-separator nonempty Op ",";
 separator nonempty EnumVal ",";
 separator Annotation "";
 

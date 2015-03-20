@@ -51,6 +51,7 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
          });
 });
 
+{{#writable}}
 {{^hasKeyField}}
 app.post('{{&schemaRoute}}', function(req, res) {
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
@@ -83,6 +84,7 @@ app.delete('{{&schemaRoute}}/:id', function(req, res) {
     }});
     res.status(200).send();
 });
+{{/writable}}
 {{/schema}}
 
 app.listen(args[0]);
