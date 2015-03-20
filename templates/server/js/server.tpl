@@ -44,10 +44,10 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
         {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id }, function(err, result) {
           if (err) return console.error(err);
             if (result.length == 0) {
-              res.status(404).send('Not Found')
-              } else {
-                res.send(result[0]);
-              }
+              res.status(404).send('Not Found');
+            } else {
+              res.send(result[0]);
+            }
          });
 });
 

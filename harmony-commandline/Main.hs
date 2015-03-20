@@ -26,15 +26,15 @@ defaultOptions = Options
 
 -- | Definition of the flags expected by the executable
 options :: [OptDescr (Options -> Options)]
-options = [ Option ['c'] ["client"]
+options = [ Option "c" ["client"]
                    (OptArg (\c options -> options { targets = parseClient c:targets options})
                            "CLIENTS")
                    "Desired output for the client"
-          , Option ['s'] ["server"]
+          , Option "s" ["server"]
                    (OptArg (\s options -> options { targets = parseServer s:targets options})
                            "SERVERS")
                    "Desired output for the server"
-          , Option ['o'] ["output_dir"]
+          , Option "o" ["output_dir"]
                    (OptArg (\dir options -> options { outputDir = fromJust dir })
                            "OUTPUT_DIR")
                    "Output path"

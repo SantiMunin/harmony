@@ -102,7 +102,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
 
       checkHasPk :: String -> [Field] -> StaticCheck ()
       checkHasPk strName fields =
-        unless ((length $ filter ((==AS.PrimaryKey) . readAnnotation) $ concatMap fieldAnnotations fields) <= 1)
+        unless (length (filter ((==AS.PrimaryKey) . readAnnotation) $ concatMap fieldAnnotations fields) <= 1)
                (fail $ strName ++ " Primary Key annotation (@PK) is used more than once")
 
       readStruct :: StructType -> StaticCheck ()
