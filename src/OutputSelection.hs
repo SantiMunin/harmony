@@ -21,6 +21,8 @@ getGenInfo SJavascript = OG.createGenInfo files templates fieldMapping
     fieldMapping AS.TString = "String"
     fieldMapping AS.TInt = "Number"
     fieldMapping AS.TDouble = "Number"
+    -- An enum is an string with constraints.
+    fieldMapping (AS.TEnum _) = "String"
     fieldMapping _ = error "Custom types not implemented yet"
 getGenInfo CPython = OG.createGenInfo files templates fieldMapping
   where

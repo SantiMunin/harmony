@@ -9,8 +9,13 @@ import           Paths_Harmony
 import           Text.Hastache
 import           Text.Hastache.Context
 
+data EnumValue = EnumValue { value :: String } deriving (Show, Data, Typeable)
+
 data SchemaVar = SchemaVar { varName    :: String
                            , varType    :: String
+                           -- Only if it is an enum (varType == String and values not empty)
+                           , isEnum     :: Bool
+                           , enumValues :: [EnumValue]
                            , isKey      :: Bool
                            , isRequired :: Bool } deriving (Show, Data, Typeable)
 

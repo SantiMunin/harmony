@@ -94,7 +94,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
           else return $ name `S.insert` names) alreadySeen (map fieldName fields)
 
       fieldOk :: Field -> StaticCheck ()
-      fieldOk (FDefined _ (Ident name) _) = do
+      fieldOk (FDefined _ _ (Ident name)) = do
         knownTypes <- CMS.gets fst
         unless (name `S.member` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")

@@ -18,15 +18,15 @@ generateSchema fieldMapping apiSpec resId =
             , TC.schemaRoute = fromJust $ M.lookup resId $ AS.resources apiSpec
             , TC.hasKeyField = hasKeyField
             , TC.keyField = keyField
-            , TC.schemaVars = generateVars fieldMapping structInfo }
+            , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
   where
     structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
     keyField = fromMaybe ("" :: AS.Id) maybeKeyField
     hasKeyField = isJust maybeKeyField
 
-generateVars :: (AS.Type -> String) -> AS.StructInfo -> [TC.SchemaVar]
-generateVars fieldMapping = map getVarFromField
+generateVars :: (AS.Type -> String) -> AS.ApiSpec-> AS.StructInfo -> [TC.SchemaVar]
+generateVars fieldMapping apiSpec = map getVarFromField
   where
     getVarFromField :: AS.FieldInfo -> TC.SchemaVar
     getVarFromField (n, t, modifs) = generateSchemaVar n t modifs
@@ -35,6 +35,13 @@ generateVars fieldMapping = map getVarFromField
     generateSchemaVar name type' modifs =
       TC.SchemaVar { TC.varName = name
                    , TC.varType = fieldMapping type'
+                   , TC.isEnum = isEnum type'
+                   , TC.enumValues = getValues type'
                    , TC.isKey = AS.PrimaryKey `elem` modifs
                    , TC.isRequired = AS.Required `elem` modifs }
+        where
+          getValues (AS.TEnum enumId) = map TC.EnumValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
+          getValues _ = []
+          isEnum (AS.TEnum _) = True
+          isEnum _ = False
 

@@ -11,7 +11,7 @@ mongoose.connect(args[1]);
 {{#schema}}
 var {{schemaName}}Schema = new mongoose.Schema({
     {{#schemaVars}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
-    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} }, {{/schemaVars}}
+    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} {{#isEnum}}, enum: [{{/isEnum}}{{#enumValues}}'{{value}}',{{/enumValues}}{{/enumData}}{{#isEnum}}]{{/isEnum}} }, {{/schemaVars}}
 });
 
 {{schemaName}}Schema.set('toJSON', {
@@ -54,6 +54,10 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
 {{^hasKeyField}}
 app.post('{{&schemaRoute}}', function(req, res) {
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
+    if (err) {
+      res.status(500).send(err);
+      return;  
+    }
     res
       .status(201)
       .json('{"id" : "'+obj._id+'"}');
@@ -62,9 +66,9 @@ app.post('{{&schemaRoute}}', function(req, res) {
 {{/hasKeyField}}
 
 app.put('{{&schemaRoute}}/:id', function(req, res) {
-  {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true}, function(err, result) {
+  {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true, runValidators : true}, function(err, result) {
     if (err) {
-      res.status(500).send();
+      res.status(500).send(err);
     } else {
       res.status(200).send();
     }
@@ -77,7 +81,7 @@ app.delete('{{&schemaRoute}}/:id', function(req, res) {
         res.status(500).send(err);
         return;
     }});
-    res.status(200);
+    res.status(200).send();
 });
 {{/schema}}
 
