@@ -1,4 +1,4 @@
--- | Defines an api spec (to be built after the static checking of the AST) and helped methods over
+-- | Defines an api spec (to be built after the static checking of the AST) and helper methods over
 -- it.
 module ApiSpec where
 
