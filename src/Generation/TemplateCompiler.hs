@@ -5,7 +5,7 @@ module Generation.TemplateCompiler where
 import           Data.Data
 import qualified Data.Text.Lazy        as TL
 import           Data.Typeable         ()
-import           Paths_Harmony
+import           Paths_harmony
 import           Text.Hastache
 import           Text.Hastache.Context
 

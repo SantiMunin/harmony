@@ -7,7 +7,7 @@ import           Data.List
 import qualified Data.Text.Lazy.IO           as TL
 import qualified Generation.ServiceGenerator as SG
 import qualified Generation.TemplateCompiler as TC
-import           Paths_Harmony
+import           Paths_harmony
 import           System.Directory
 
 data GenerationInfo = GI { files :: [FilePath], templates :: [TemplateInfo] , fieldMapping :: AS.Type -> String }

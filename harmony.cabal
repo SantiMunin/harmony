@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 -- The name of the package.
-name:                Harmony
+name:                harmony
 
 -- The package version.  See the Haskell package versioning policy (PVP) 
 -- for standards guiding when and how versions should be incremented.
@@ -35,6 +35,7 @@ maintainer:          santimunin@gmail.com
 category:            Development
 
 build-type:          Custom
+
 data-files:          templates/server/js/package.tpl
                    , templates/server/js/server.tpl
                    , templates/client/python/client.tpl
@@ -78,7 +79,7 @@ library
                      , Language.Par
                      , LangUtils
                      , OutputSelection
-                     , Paths_Harmony
+                     , Paths_harmony
                      , StaticCheck
 
   default-language:    Haskell2010
@@ -92,7 +93,7 @@ executable harmony
   main-is:             Main.hs
 
   build-depends:       base >= 4.7 && < 4.8
-                     , Harmony
+                     , harmony
 
   default-language:    Haskell2010
 
@@ -111,7 +112,7 @@ test-suite hspec
                      , hspec >= 2.0
                      , QuickCheck
                      , HUnit
-                     , Harmony
+                     , harmony
 
   default-language:    Haskell2010
 
