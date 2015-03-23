@@ -114,7 +114,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
                                         | map toLower name == "immutable" = AS.Immutable
                                         | map toLower name == "required" = AS.Required
                                         | otherwise = error $ "Annotation " ++ name ++ " not recognized."
-      readField as (FDef anns (Ident n) ft) = AS.FI (n, fieldToSpecType as ft, S.fromList $ map readAnnotation anns)
+      readField as (FDef anns (Ident n) ft) = AS.FI (n, fieldSpecType as ft, S.fromList $ map readAnnotation anns)
 
 checkResources :: [Resource] -> StaticCheck ()
 checkResources ress = do

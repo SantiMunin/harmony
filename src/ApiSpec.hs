@@ -22,10 +22,10 @@ type EnumInfo = [EnumValue]
 
 -- | A field modifier.
 data Modifier =
-    Hidden -- ^ The field will not be returned when read.
-  | Immutable -- ^ The field cannot be modified.
+    Hidden -- ^ The field will not be returned when read
+  | Immutable -- ^ The field cannot be modified
   | Required -- ^ The field can't be absent
-  | PrimaryKey -- ^ The field is the primary key (at most one per struct).
+  | PrimaryKey -- ^ The field is the primary key (at most one per struct)
   deriving (Eq, Ord, Show)
 
 -- | A field has a type, an identifier and a set of modifiers.
@@ -59,17 +59,17 @@ type Resources = M.Map Id (Route, Writable)
 type Writable = Bool
 
 -- | The spec of an api is a set of enums and structs, along with the resources.
-data ApiSpec = AS { name      :: String -- ^ Name of the service.
-                  , version   :: String -- ^ Version of the service.
-                  , enums     :: Enums -- ^ Information about the user defined enums.
-                  , structs   :: Structs -- ^ Information about the user defined structs.
-                  , resources :: Resources -- ^ Information about the resources defined.
+data ApiSpec = AS { name      :: String -- ^ Name of the service
+                  , version   :: String -- ^ Version of the service
+                  , enums     :: Enums -- ^ Information about the user defined enums
+                  , structs   :: Structs -- ^ Information about the user defined structs
+                  , resources :: Resources -- ^ Information about the resources defined
                   }
 
 
 -- | Gets the primary key of a struct if it was specified.
-getPrimaryKey :: StructInfo -- ^ The info of the struct.
-              -> Maybe Id -- ^ The result (Nothing if there was no PK defined).
+getPrimaryKey :: StructInfo -- ^ The info of the struct
+              -> Maybe Id -- ^ The result (Nothing if there was no PK defined)
 getPrimaryKey structInfo =
   case filter hasPkModifier structInfo of
     [] -> Nothing
