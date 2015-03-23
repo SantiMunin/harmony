@@ -110,6 +110,7 @@ test-suite hspec
                      , containers
                      , hspec >= 2.0
                      , QuickCheck
+                     , HUnit
                      , Harmony
 
   default-language:    Haskell2010
