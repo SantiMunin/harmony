@@ -3,6 +3,7 @@ module Generation.ServiceGenerator(generateService) where
 import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
 import           Data.Maybe                  (fromJust, fromMaybe, isJust)
+import qualified Data.Set                    as S
 import qualified Generation.TemplateCompiler as TC
 
 -- | Creates a Service object from a Specification object.
@@ -31,9 +32,9 @@ generateVars :: (AS.Type -> String) -> AS.ApiSpec-> AS.StructInfo -> [TC.SchemaV
 generateVars fieldMapping apiSpec = map getVarFromField
   where
     getVarFromField :: AS.FieldInfo -> TC.SchemaVar
-    getVarFromField (n, t, modifs) = generateSchemaVar n t modifs
+    getVarFromField (AS.FI (n, t, modifs)) = generateSchemaVar n t modifs
     -- TODO(6): implement custom fields
-    generateSchemaVar :: AS.Id -> AS.Type -> [AS.Modifier] -> TC.SchemaVar
+    generateSchemaVar :: AS.Id -> AS.Type -> S.Set AS.Modifier -> TC.SchemaVar
     generateSchemaVar name type' modifs =
       TC.SchemaVar { TC.varName = name
                    , TC.varType = fieldMapping type'
@@ -42,8 +43,8 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.enumValues = getValues type'
                    , TC.isStruct = isStruct type'
                    , TC.referredStruct = referredStruct type'
-                   , TC.isKey = AS.PrimaryKey `elem` modifs
-                   , TC.isRequired = AS.Required `elem` modifs }
+                   , TC.isKey = AS.PrimaryKey `S.member` modifs
+                   , TC.isRequired = AS.Required `S.member` modifs }
         where
           getValues (AS.TEnum enumId) = map TC.EnumValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
           getValues _ = []
