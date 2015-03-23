@@ -66,8 +66,3 @@ getPrimaryKey structInfo =
     _ -> error "A struct should have at most one specified primary key."
   where
     hasPkModifier (_, _, modifiers) = PrimaryKey `elem` modifiers
-
--- | Search for the Immutable modifier in the given field.
-isImmutable :: FieldInfo -> Bool
-isImmutable (_, _, modifiers) = Immutable `elem` modifiers
-
