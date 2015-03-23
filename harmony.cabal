@@ -82,11 +82,29 @@ library
   
 executable harmony
 
+  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind
+
   hs-source-dirs:      harmony-commandline
 
   main-is:             Main.hs
 
   build-depends:       base >= 4.7 && < 4.8
+                     , Harmony
+
+  default-language:    Haskell2010
+
+test-suite spec
+
+  type:                exitcode-stdio-1.0
+
+  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind
+
+  hs-source-dirs:      test
+
+  main-is:             Spec.hs
+
+  build-depends:       base >= 4.7 && < 4.8
+                     , hspec >= 2.0
                      , Harmony
 
   default-language:    Haskell2010
