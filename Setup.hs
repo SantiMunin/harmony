@@ -13,9 +13,7 @@ main = defaultMainWithHooks $ simpleUserHooks { preBuild = makeBnfc }
 -- compiling.  
 makeBnfc :: Args -> BuildFlags -> IO HookedBuildInfo
 makeBnfc _ _ = do 
-  bnfcOutput <- system $ "if [ 'language-spec/Language.cf' -nt src/Language/ ];"
-                      ++ "then echo \"Language specification needs to be compiled\";"
-                      ++ "bnfc -d language-spec/Language.cf; rm -rf src/Language; mv Language src; fi"
+  bnfcOutput <- system "./make_bnfc.sh"
   case bnfcOutput of
        ExitSuccess -> return emptyHookedBuildInfo
        (ExitFailure code) -> error $ "Error processing the language specification: " ++ show code
