@@ -10,8 +10,8 @@ mongoose.connect(args[1]);
 
 {{#schema}}
 var {{schemaName}}Schema = new mongoose.Schema({
-    {{#schemaVars}} {{varName}} : { type: {{varType}} {{#isKey}}, unique: true, index: true,
-    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} {{#isEnum}}, enum: [{{/isEnum}}{{#enumValues}}'{{value}}',{{/enumValues}}{{/enumData}}{{#isEnum}}]{{/isEnum}} }, {{/schemaVars}}
+    {{#schemaVars}} {{varName}} : { type: {{#isStruct}}Schema.ObjectId, ref:'{{referredStruct}}Schema'{{/isStruct}}{{^isStruct}}{{#isList}}[{{/isList}}{{varType}}{{#isList}}]{{/isList}} {{#isKey}}, unique: true, index: true,
+    dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} {{#isEnum}}, enum: [{{/isEnum}}{{#enumValues}}'{{value}}',{{/enumValues}}{{/enumData}}{{#isEnum}}]{{/isEnum}}{{/isStruct}} }, {{/schemaVars}}
 });
 
 {{schemaName}}Schema.set('toJSON', {

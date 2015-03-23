@@ -1,5 +1,7 @@
 module LangUtils where
 
+import qualified ApiSpec      as AS
+import qualified Data.Map     as M
 import           Language.Abs
 
 specName :: Specification -> String
@@ -33,20 +35,21 @@ resIsWritable :: Resource -> Bool
 resIsWritable (Res _ _ mode) = mode == Write
 
 fieldName :: Field -> String
-fieldName (FString _ (Ident name)) = name
-fieldName (FInt _ (Ident name)) = name
-fieldName (FDouble _ (Ident name)) = name
-fieldName (FDefined _ (Ident name) _) = name
+fieldName (FDef _ (Ident name) _) = name
 
 fieldAnnotations :: Field -> [Annotation]
-fieldAnnotations (FString annotations _) = annotations
-fieldAnnotations (FInt annotations _) = annotations
-fieldAnnotations (FDouble annotations _) = annotations
-fieldAnnotations (FDefined annotations _ _) = annotations
+fieldAnnotations (FDef annotations _ _) = annotations
 
-fieldType :: Field -> String
-fieldType (FString _ _) = "String"
-fieldType (FInt _ _) = "Int"
-fieldType (FDouble _ _) = "Double"
-fieldType (FDefined _ _ (Ident typeName)) = typeName
+fieldToType :: Field -> FType
+fieldToType (FDef _ _ ft) = ft
 
+fieldToSpecType :: AS.ApiSpec -> FType -> AS.Type
+fieldToSpecType _ FString = AS.TString
+fieldToSpecType _ FInt = AS.TInt
+fieldToSpecType _ FDouble = AS.TDouble
+fieldToSpecType as (FDefined (Ident name)) = getType as name
+  where
+    getType env t | t `M.member` AS.enums env = AS.TEnum t
+                  | t `M.member` AS.structs env = AS.TStruct t
+                  | otherwise = error $ "getType: " ++ t ++ " is not defined."
+fieldToSpecType as (FList type') = AS.TList $ fieldToSpecType as type'

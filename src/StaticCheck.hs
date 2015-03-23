@@ -94,7 +94,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
           else return $ name `S.insert` names) alreadySeen (map fieldName fields)
 
       fieldOk :: Field -> StaticCheck ()
-      fieldOk (FDefined _ _ (Ident name)) = do
+      fieldOk (FDef _ _ (FDefined (Ident name))) = do
         knownTypes <- CMS.gets fst
         unless (name `S.member` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")
@@ -114,15 +114,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
                                         | map toLower name == "immutable" = AS.Immutable
                                         | map toLower name == "required" = AS.Required
                                         | otherwise = error $ "Annotation " ++ name ++ " not recognized."
-      readField as (FDefined anns (Ident n) (Ident t)) = (n, getType as t, map readAnnotation anns)
-        where
-          getType env t | t `M.member` AS.enums env = AS.TEnum t
-                        | t `M.member` AS.structs env = AS.TStruct t
-                        | otherwise = error $ "getType: " ++ t ++ " is not defined."
-
-      readField _ (FString anns (Ident n)) = (n, AS.TString, map readAnnotation anns)
-      readField _ (FInt anns (Ident n)) = (n, AS.TInt, map readAnnotation anns)
-      readField _ (FDouble anns (Ident n)) = (n, AS.TDouble, map readAnnotation anns)
+      readField as (FDef anns (Ident n) ft) = (n, fieldToSpecType as ft, map readAnnotation anns)
 
 checkResources :: [Resource] -> StaticCheck ()
 checkResources ress = do

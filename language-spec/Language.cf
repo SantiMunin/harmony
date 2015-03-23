@@ -11,10 +11,12 @@ Res.          Resource      ::= "resource" Ident "(" String ")" Mode;
 ReadOnly.     Mode          ::= "read_only";
 Write.        Mode          ::= ; 
 
-FString.      Field         ::= [Annotation] Ident ":" "String";
-FInt.         Field         ::= [Annotation] Ident ":" "Int";
-FDouble.      Field         ::= [Annotation] Ident ":" "Double";
-FDefined.     Field         ::= [Annotation] Ident ":" Ident;
+FDef.         Field         ::= [Annotation] Ident ":" FType;
+FString.      FType         ::= "String";
+FInt.         FType         ::= "Int";
+FDouble.      FType         ::= "Double";
+FDefined.     FType         ::= Ident;
+FList.        FType         ::= "[" FType "]";
 Ann.          Annotation    ::= "@" Ident;
 EnVal.        EnumVal       ::= Ident;
 

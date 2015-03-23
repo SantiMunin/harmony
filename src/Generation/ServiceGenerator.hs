@@ -37,8 +37,11 @@ generateVars fieldMapping apiSpec = map getVarFromField
     generateSchemaVar name type' modifs =
       TC.SchemaVar { TC.varName = name
                    , TC.varType = fieldMapping type'
+                   , TC.isList = isList type'
                    , TC.isEnum = isEnum type'
                    , TC.enumValues = getValues type'
+                   , TC.isStruct = isStruct type'
+                   , TC.referredStruct = referredStruct type'
                    , TC.isKey = AS.PrimaryKey `elem` modifs
                    , TC.isRequired = AS.Required `elem` modifs }
         where
@@ -46,4 +49,10 @@ generateVars fieldMapping apiSpec = map getVarFromField
           getValues _ = []
           isEnum (AS.TEnum _) = True
           isEnum _ = False
+          isList (AS.TList _) = True
+          isList _ = False
+          isStruct (AS.TStruct _) = True
+          isStruct _ = False
+          referredStruct (AS.TStruct str) = str
+          referredStruct _ = ""
 

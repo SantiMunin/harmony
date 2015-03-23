@@ -1,0 +1,8 @@
+service_name: ComposedResources
+service_version: 1.0.0
+
+struct Str1 { name : String }
+struct Str2 { data : Str1, age : Int}
+
+resource Str1 ("/struct1")
+resource Str2 ("/struct2")
