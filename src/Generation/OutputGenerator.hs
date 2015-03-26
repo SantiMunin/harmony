@@ -26,7 +26,7 @@ type GenerationFunction = FilePath -- ^ Output path
                        -> AS.ApiSpec -- ^ Information of the defined web service
                        -> IO ()
 
--- | Generation functions.
+-- | Target generation function.
 generateJSServer, generateJSClient, generatePythonClient :: GenerationFunction
 generateJSServer = generateOutput (files, templates, fieldMapping)
   where
