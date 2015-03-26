@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Generation.OutputGenerator(TemplateInfo, createGenInfo, GenerationInfo, generateOutput) where
+-- | Contains the generation logic and functions of the different possible outputs.
+module Generation.OutputGenerator(GenerationFunction, generateJSServer, generateJSClient, generatePythonClient) where
 
 import qualified ApiSpec                     as AS
 import           Control.Monad
@@ -10,25 +11,73 @@ import qualified Generation.TemplateCompiler as TC
 import           Paths_harmony
 import           System.Directory
 
-data GenerationInfo = GI { files :: [FilePath], templates :: [TemplateInfo] , fieldMapping :: AS.Type -> String }
+-- | A template is a source file and a new extension; e.g. ("template.tpl", "js") will result in
+--   "template.js" after the template compilation.
 type TemplateInfo = (FilePath, String)
 
-createGenInfo :: [FilePath] -> [TemplateInfo] -> (AS.Type -> String) -> GenerationInfo
-createGenInfo files' templates' fieldMapping' =
-  GI { files = files', templates = templates', fieldMapping = fieldMapping' }
+-- | All the info necesaary in order to generate a target:
+--   * List of regular files (this will be just directly copied)
+--   * List of templates that will be compiled
+--   * A map from a Harmony type to the target's type
+type GenerationInfo = ([FilePath], [TemplateInfo], AS.Type -> String)
 
-generateOutput :: FilePath -> AS.ApiSpec -> GenerationInfo -> IO ()
-generateOutput outputPath apiSpec genInfo = do
-  forM_ (files genInfo) (copy outputPath)
-  forM_ (templates genInfo) (generateAndCopy outputPath $ SG.generateService apiSpec (fieldMapping genInfo))
+-- | A function that generates the target.
+type GenerationFunction = FilePath -- ^ Output path
+                       -> AS.ApiSpec -- ^ Information of the defined web service
+                       -> IO ()
 
-copy :: FilePath -> FilePath -> IO ()
+-- | Generation functions.
+generateJSServer, generateJSClient, generatePythonClient :: GenerationFunction
+generateJSServer = generateOutput (files, templates, fieldMapping)
+  where
+    files = []
+    templates = [ ("templates/server/js/server.tpl", "js")
+                , ("templates/server/js/package.tpl", "json") ]
+    fieldMapping AS.TString = "String"
+    fieldMapping AS.TInt = "Number"
+    fieldMapping AS.TDouble = "Number"
+    -- An enum is an string with constraints.
+    fieldMapping (AS.TEnum _) = "String"
+    fieldMapping (AS.TStruct t) = t
+    fieldMapping (AS.TList t) = fieldMapping t
+    fieldMapping _ = error "Custom types not implemented yet"
+
+generateJSClient = error "Javascript client is not implemented yet"
+
+generatePythonClient = generateOutput (files, templates, fieldMapping)
+  where
+    files = []
+    templates = [("templates/client/python/client.tpl", "py")]
+    -- Dummy values so an error can be detected after serialization
+    fieldMapping AS.TString = "error:PythonNoTypes (String)"
+    fieldMapping AS.TInt = "error:PythonNoTypes (Int)"
+    fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
+    fieldMapping _ = error "Custom types not implemented yet"
+
+-- | Uses all the information provided by the user (and the input file) and generates
+-- the output by compiling the templates and copying all the files to the output directory.
+generateOutput :: GenerationInfo -- ^ The information gathered from the user
+               -> FilePath -- ^ Output path
+               -> AS.ApiSpec -- ^ The information gathered from the input file (specification)
+               -> IO ()
+generateOutput (files, templates, fieldMapping) outputPath apiSpec = do
+  forM_ files (copy outputPath)
+  forM_ templates (generateAndWrite outputPath $ SG.generateService apiSpec fieldMapping)
+
+-- | Copies a file.
+copy :: FilePath -- ^ Origin file
+     -> FilePath -- ^ Destination path
+     -> IO ()
 copy origin dest = do
   cabalFilePath <- getDataFileName origin
   copyFile cabalFilePath (dest ++ "/" ++ origin)
 
-generateAndCopy :: FilePath -> TC.Service -> TemplateInfo -> IO ()
-generateAndCopy dest service (templatePath, newExt)  = do
+-- | Generate a template and writes it to the destination path.
+generateAndWrite :: FilePath -- ^ Destination path
+                -> TC.Service -- ^ Information for the template
+                -> TemplateInfo -- ^ Information of the template
+                -> IO ()
+generateAndWrite dest service (templatePath, newExt)  = do
   output <- TC.render templatePath service
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output

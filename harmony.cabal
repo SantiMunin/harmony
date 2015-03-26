@@ -78,7 +78,6 @@ library
                      , Language.Lex
                      , Language.Par
                      , LangUtils
-                     , OutputSelection
                      , Paths_harmony
                      , StaticCheck
 

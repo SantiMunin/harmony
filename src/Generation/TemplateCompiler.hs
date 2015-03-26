@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
+
+-- | Compiles Hastache templates and defines the datatypes to pass information to them.
 module Generation.TemplateCompiler where
 
 import           Data.Data
@@ -9,8 +11,12 @@ import           Paths_harmony
 import           Text.Hastache
 import           Text.Hastache.Context
 
+
+-- | An enum value
 data EnumValue = EnumValue { value :: String } deriving (Show, Data, Typeable)
 
+-- | A schema variable. It is a field of a struct.
+-- <b>DISCLAIMER</b>: there is some redundancy but the focus of this module is to make the templating easy.
 data SchemaVar = SchemaVar { varName        :: String
                            , varType        :: String
                            , isList         :: Bool
@@ -22,6 +28,7 @@ data SchemaVar = SchemaVar { varName        :: String
                            , isKey          :: Bool
                            , isRequired     :: Bool } deriving (Show, Data, Typeable)
 
+-- | A schema is a struct (it has a name, a route, a write mode, etc...).
 data Schema = Schema { schemaName  :: String
                      , schemaRoute :: String
                      , writable    :: Bool
@@ -29,11 +36,12 @@ data Schema = Schema { schemaName  :: String
                      , keyField    :: String
                      , schemaVars  :: [SchemaVar] } deriving (Show, Data, Typeable)
 
+-- | A service has a name, a version, and a list of 'Schema'
 data Service = Service { name    :: String
                        , version :: String
                        , schema  :: [Schema] } deriving (Show, Data, Typeable)
 
--- | Given a template and a service object, it renders the server.
+-- | Given a template and a service object, render the template.
 render:: String -> Service -> IO TL.Text
 render templateLoc service =
   do
