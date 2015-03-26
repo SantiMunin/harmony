@@ -1,3 +1,4 @@
+-- | Generation of 'TC.Service' objects from the specification.
 module Generation.ServiceGenerator(generateService) where
 
 import qualified ApiSpec                     as AS
@@ -6,14 +7,20 @@ import           Data.Maybe                  (fromJust, fromMaybe, isJust)
 import qualified Data.Set                    as S
 import qualified Generation.TemplateCompiler as TC
 
--- | Creates a Service object from a Specification object.
-generateService :: AS.ApiSpec -> (AS.Type -> String) -> TC.Service
+-- | Transforms an api specification to a service.
+generateService :: AS.ApiSpec -- ^ The specification of the web service
+                -> (AS.Type -> String) -- ^ A mapping from internal types to target's types
+                -> TC.Service
 generateService apiSpec fieldMapping =
   TC.Service (AS.name apiSpec)
              (AS.version apiSpec)
              $ map (generateSchema fieldMapping apiSpec) (M.keys $ AS.resources apiSpec)
 
-generateSchema :: (AS.Type -> String) -> AS.ApiSpec -> AS.Id -> TC.Schema
+-- | Generates the information of a resource/struct.
+generateSchema :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
+               -> AS.ApiSpec -- ^ The specification of the web service
+               -> AS.Id -- ^ The name of the resource/struct
+               -> TC.Schema
 generateSchema fieldMapping apiSpec resId =
   TC.Schema { TC.schemaName = resId
             , TC.schemaRoute = schemaRoute'
@@ -28,7 +35,11 @@ generateSchema fieldMapping apiSpec resId =
     keyField = fromMaybe ("" :: AS.Id) maybeKeyField
     hasKeyField = isJust maybeKeyField
 
-generateVars :: (AS.Type -> String) -> AS.ApiSpec-> AS.StructInfo -> [TC.SchemaVar]
+-- | Generates the information of the fields of a 'TC.Schema'.
+generateVars :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
+             -> AS.ApiSpec -- ^ The specification of the web service
+             -> AS.StructInfo -- ^ The information of the struct
+             -> [TC.SchemaVar] -- ^ The information of all the fields of the schema
 generateVars fieldMapping apiSpec = map getVarFromField
   where
     getVarFromField :: AS.FieldInfo -> TC.SchemaVar
