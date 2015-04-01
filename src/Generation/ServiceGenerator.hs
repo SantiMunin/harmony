@@ -32,7 +32,8 @@ generateSchema fieldMapping apiSpec resId =
     (schemaRoute', writable') = fromJust $ M.lookup resId $ AS.resources apiSpec
     structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
-    keyField = fromMaybe ("" :: AS.Id) maybeKeyField
+    -- Leave empty if it doesn't exist
+    keyField = fromMaybe "" maybeKeyField
     hasKeyField = isJust maybeKeyField
 
 -- | Generates the information of the fields of a 'TC.Schema'.
@@ -58,13 +59,17 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.isRequired = AS.Required `S.member` modifs }
         where
           getValues (AS.TEnum enumId) = map TC.EnumValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
+          getValues (AS.TList t') = getValues t'
           getValues _ = []
           isEnum (AS.TEnum _) = True
+          isEnum (AS.TList t') = isEnum t'
           isEnum _ = False
           isList (AS.TList _) = True
           isList _ = False
           isStruct (AS.TStruct _) = True
+          isStruct (AS.TList t') = isStruct t'
           isStruct _ = False
           referredStruct (AS.TStruct str) = str
+          referredStruct (AS.TList t') = referredStruct t'
           referredStruct _ = ""
 

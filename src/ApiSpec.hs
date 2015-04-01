@@ -1,8 +1,10 @@
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 -- | Defines an api spec (to be built after the static checking of the AST) and helper methods over
 -- it.
 module ApiSpec where
 
+import           Control.Monad   (liftM)
 import           Data.DeriveTH
 import qualified Data.Map        as M
 import qualified Data.Set        as S
@@ -28,11 +30,16 @@ data Modifier =
   | PrimaryKey -- ^ The field is the primary key (at most one per struct)
   deriving (Eq, Ord, Show)
 
+derive makeArbitrary ''Modifier
+
 -- | A field has a type, an identifier and a set of modifiers.
 newtype FieldInfo = FI (Id, Type, S.Set Modifier) deriving Show
 
 -- | A struct is a list of fields.
 type StructInfo = [FieldInfo]
+
+-- | A resource has a route and a write mode.
+type ResourceInfo = (Route, Writable)
 
 -- | A type can be a primitive one (int, long, double, bool...), an enum, a struct, or a list of
 -- another type.
@@ -46,6 +53,9 @@ data Type = TInt
           | TStruct Id
           | TList Type deriving (Eq, Show)
 
+instance (CoArbitrary Type) where
+  coarbitrary = coarbitraryShow
+
 -- | Map from enum id to its info.
 type Enums = M.Map Id EnumInfo
 
@@ -53,7 +63,7 @@ type Enums = M.Map Id EnumInfo
 type Structs = M.Map Id StructInfo
 
 -- | Map from resource id to the route and the mode.
-type Resources = M.Map Id (Route, Writable)
+type Resources = M.Map Id ResourceInfo
 
 -- | Writable is a boolean type.
 type Writable = Bool
@@ -66,6 +76,7 @@ data ApiSpec = AS { name      :: String -- ^ Name of the service
                   , resources :: Resources -- ^ Information about the resources defined
                   }
 
+derive makeShow ''ApiSpec
 
 -- | Gets the primary key of a struct if it was specified.
 getPrimaryKey :: StructInfo -- ^ The info of the struct
@@ -78,13 +89,106 @@ getPrimaryKey structInfo =
   where
     hasPkModifier (FI (_, _, modifiers)) = PrimaryKey `S.member` modifiers
 
+-- Testing
 
-derive makeArbitrary ''Type
-derive makeArbitrary ''Modifier
+-- | Generates a non-empty arbitrary 'String'.
+nonEmptyString :: Gen String
+nonEmptyString = listOf1 arbitrary
 
-instance (Arbitrary FieldInfo) where
+-- | Generates an arbitrary 'FieldInfo', making sure that the ids used for enums and structs are valid.
+generateRandomFieldInfo :: [Id] -> [Id] -> Gen FieldInfo
+generateRandomFieldInfo enumIds structIds =
+  do
+    id <- nonEmptyString
+    t <- generateRandomType enumIds structIds
+    modifiers <- listOf arbitrary
+    return $ FI (id, t, S.fromList modifiers)
+  where
+    generateRandomType :: [Id] -> [Id] -> Gen Type
+    generateRandomType enumIds structIds = do
+      t <- arbitrary
+
+      case t of
+           (TStruct _) -> processStruct
+           (TEnum _) -> processEnum
+           (TList t') | needsEnumId t' ->
+                          if null enumIds
+                            then generateRandomType enumIds structIds
+                            else do
+                                newId <- elements enumIds
+                                return $ TList $ setNewId newId t'
+                      | needsStructId t' ->
+                          if null structIds
+                            then generateRandomType enumIds structIds
+                            else do
+                              newId <- elements structIds
+                              return $ TList $ setNewId newId t'
+                      | otherwise -> return $ TList t'
+           other -> return other
+      where
+        processEnum = if null enumIds
+                        then generateRandomType enumIds structIds
+                        else liftM TEnum $ elements enumIds
+        processStruct =  if null structIds
+                          then generateRandomType enumIds structIds
+                          else liftM TStruct $ elements structIds
+        needsEnumId (TEnum _) = True
+        needsEnumId (TList t) = needsEnumId t
+        needsEnumId _ = False
+
+        needsStructId (TStruct _) = True
+        needsStructId (TList t) = needsStructId t
+        needsStructId _ = False
+
+        setNewId newId' (TEnum _) = TEnum newId'
+        setNewId newId' (TStruct _) = TStruct newId'
+        setNewId newId' (TList t) = TList $ setNewId newId' t
+        setNewId _ t = t
+
+instance (Arbitrary ApiSpec) where
   arbitrary = do
-    n <- arbitrary
-    t <- arbitrary
-    mods <- listOf arbitrary
-    return $ FI (n, t, S.fromList mods)
+    name' <- nonEmptyString
+    version' <- nonEmptyString
+    enumIds <- listOf nonEmptyString
+    enums' <- mapM createEnum enumIds
+    structIds <- listOf nonEmptyString
+    structs' <- mapM (createStruct enumIds structIds) structIds
+    resources' <- mapM (createResource . fst) structs'
+    return AS { name = name'
+              , version = version'
+              , enums = M.fromList enums'
+              , structs = M.fromList structs'
+              , resources = M.fromList resources'
+              }
+    where
+      createEnum :: Id -> Gen (Id, EnumInfo)
+      createEnum id = do
+        values <- listOf1 nonEmptyString
+        return (id, values)
+
+      createStruct :: [Id] -> [Id] -> Id -> Gen (Id, StructInfo)
+      createStruct enumIds structIds thisStructId = do
+        rawFields <- listOf1 $ generateRandomFieldInfo enumIds structIds
+        shouldHavePk <- arbitrary
+        let fields = filterPrimaryKey shouldHavePk rawFields
+        return (thisStructId, fields)
+        where
+          filterPrimaryKey _ [] = []
+          filterPrimaryKey True (FI (id, t, mods):fs) | PrimaryKey `S.member` mods = FI (id, t, PrimaryKey `S.delete` mods) : filterPrimaryKey False fs
+          filterPrimaryKey True (FI (id, t, mods):fs) = FI (id, t, mods) : filterPrimaryKey True fs
+          filterPrimaryKey False (FI (id, t, mods):fs) = FI (id, t, PrimaryKey `S.delete` mods) : filterPrimaryKey False fs
+
+      createResource :: Id -> Gen (Id, ResourceInfo)
+      createResource id = do
+        route <- nonEmptyString
+        writable <- arbitrary
+        return (id, (route, writable))
+
+instance (Arbitrary Type) where
+  arbitrary = do
+    t <- elements [TInt, TLong, TFloat, TDouble, TBool, TString, TEnum "", TStruct "", TList TInt]
+    case t of
+         TEnum _ -> liftM TEnum nonEmptyString
+         TStruct _ -> liftM TStruct nonEmptyString
+         TList _ -> liftM TList arbitrary
+         other -> return other

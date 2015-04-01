@@ -1,19 +1,21 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE TemplateHaskell    #-}
 
 -- | Compiles Hastache templates and defines the datatypes to pass information to them.
 module Generation.TemplateCompiler where
 
 import           Data.Data
+import           Data.DeriveTH
 import qualified Data.Text.Lazy        as TL
 import           Data.Typeable         ()
 import           Paths_harmony
+import           Test.QuickCheck
 import           Text.Hastache
 import           Text.Hastache.Context
 
-
 -- | An enum value
-data EnumValue = EnumValue { value :: String } deriving (Show, Data, Typeable)
+data EnumValue = EnumValue { value :: String } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema variable. It is a field of a struct.
 -- <b>DISCLAIMER</b>: there is some redundancy but the focus of this module is to make the templating easy.
@@ -26,7 +28,7 @@ data SchemaVar = SchemaVar { varName        :: String
                            , isStruct       :: Bool
                            , referredStruct :: String
                            , isKey          :: Bool
-                           , isRequired     :: Bool } deriving (Show, Data, Typeable)
+                           , isRequired     :: Bool } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema is a struct (it has a name, a route, a write mode, etc...).
 data Schema = Schema { schemaName  :: String
@@ -48,3 +50,10 @@ render templateLoc service =
     template <- getDataFileName templateLoc >>= readFile
     let context = mkGenericContext service in
       hastacheStr defaultConfig (encodeStr template) context
+
+
+derive makeArbitrary ''Service
+derive makeArbitrary ''Schema
+derive makeArbitrary ''SchemaVar
+derive makeArbitrary ''EnumValue
+
