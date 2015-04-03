@@ -1,3 +1,4 @@
+-- | Static checking of the input file.
 module StaticCheck (staticCheck) where
 
 import qualified ApiSpec             as AS
@@ -10,6 +11,7 @@ import qualified Data.Set            as S
 import           Language.Abs
 import           Language.ErrM
 import           LangUtils
+
 
 type Env = (S.Set String, AS.ApiSpec)
 
@@ -34,6 +36,7 @@ initialEnv = (S.empty,
 -- | Checks the definition for:
 --   * Name clashes
 --   * Undefined types
+-- and returns a better representation of the api spec.
 staticCheck :: Specification -> Err AS.ApiSpec
 staticCheck spec@(Spec _ _ enums structs resources) = do
   (_, s) <- runStateT checkSeq initialEnv
