@@ -7,7 +7,7 @@ Nm.           Name          ::= "service_name" ":" Ident;
 Ver.          Version       ::= "service_version" ":" VerIdent;
 DefEnum.      EnumType      ::= "enum" Ident "{" [EnumVal] "}";
 DefStr.       StructType    ::= "struct" Ident "{" [Field] "}";
-Res.          Resource      ::= "resource" Ident "(" String ")" Mode; 
+Res.          Resource      ::= "resource" Ident "(" "/" String ")" Mode; 
 ReadOnly.     Mode          ::= "read_only";
 Write.        Mode          ::= ; 
 
