@@ -1,5 +1,3 @@
-# harmony
-
 Harmony is a web service specification compiler that generates implementation (server and client) and tests.
 
 ## Targets supported
