@@ -19,6 +19,7 @@ assertException ex action =
 
 -- TODO(#42)
 derive makeArbitrary ''Ident
+derive makeArbitrary ''RouteIdent
 derive makeArbitrary ''Name
 derive makeArbitrary ''Version
 derive makeArbitrary ''VerIdent

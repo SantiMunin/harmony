@@ -100,7 +100,7 @@ test-suite hspec
 
   type:                exitcode-stdio-1.0
 
-  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-orphans
+  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-orphans -fhpc
 
   hs-source-dirs:      test
 
@@ -129,3 +129,4 @@ test-suite hlint
   type:                exitcode-stdio-1.0
   
   default-language:    Haskell2010
+

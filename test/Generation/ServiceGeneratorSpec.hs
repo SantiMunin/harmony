@@ -3,6 +3,7 @@ module Generation.ServiceGeneratorSpec where
 
 import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
+import           Data.Maybe                  (fromJust, isNothing)
 import           Generation.ServiceGenerator
 import qualified Generation.TemplateCompiler as TC
 import           Test.Hspec
@@ -33,10 +34,11 @@ prop_enumsCorrectlyTranslated apiSpec =
   where
     result = generateService apiSpec fieldMapping
     apiSpecEnumInfo = AS.enums apiSpec
+    -- It is either not an enum or it has some values and the enum exists.
     enumProcessingCorrect schemaVar =
-      if TC.isEnum schemaVar
-      then varInSpecEnums schemaVar && not (null $ TC.enumValues schemaVar)
-      else null $ TC.enumValues schemaVar
+      isNothing (TC.isEnum schemaVar) ||
+          (varInSpecEnums schemaVar &&
+             not (null $ TC.values $ fromJust $ TC.isEnum schemaVar))
     varInSpecEnums var = TC.varType var `M.member` apiSpecEnumInfo
 
 prop_structsCorrectlyTranslated :: AS.ApiSpec -> Property

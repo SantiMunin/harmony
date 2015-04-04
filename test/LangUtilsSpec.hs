@@ -45,7 +45,7 @@ spec =
 
     context "resRoute" $
       it "returns the route of a resource" $ property $
-        \res@(Res _ route _) -> resRoute res == route
+        \res@(Res _ (RouteIdent route) _) -> resRoute res == route
 
     context "resIsWritable" $
       it "returns the writing mode of a resource" $ property $
