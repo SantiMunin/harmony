@@ -1,0 +1,6 @@
+service_name: ReadOnlyService
+service_version: 1.0.0
+
+struct Str { field : String }
+
+resource Str ("/str") read_only

@@ -1,0 +1,6 @@
+service_name: ListService
+service_version: 1.0.0
+
+struct Str1 { names : [String] }
+
+resource Str1 ("/str")

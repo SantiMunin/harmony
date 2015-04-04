@@ -1,0 +1,10 @@
+service_name: MapService
+service_version: 1.0
+ 
+struct MapEntry {
+  @PK
+  key : String,
+  key : String
+}
+ 
+resource MapEntry ("/map") 

@@ -1,0 +1,12 @@
+service_name: MapService
+service_version: 1.0
+ 
+struct MapEntry {
+  @PK
+  @RegExp("[a-zA-Z]+")
+  key : String,
+  @MinLength(2)
+  value : String
+}
+ 
+resource MapEntry ("/map") 
