@@ -24,7 +24,7 @@ After installing the package (`cabal install`), you will get the `harmony` execu
 
 The input file should follow the syntax specified in `language_spec/Language.cf`. Example:
 
-    service_name: AService
+    service_name: HouseworkService
     service_version: 1.0.0
 
     enum Color { RED, BLUE, BLACK }
