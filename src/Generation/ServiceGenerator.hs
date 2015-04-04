@@ -14,23 +14,23 @@ generateService :: AS.ApiSpec -- ^ The specification of the web service
 generateService apiSpec fieldMapping =
   TC.Service (AS.name apiSpec)
              (AS.version apiSpec)
-             $ map (generateSchema fieldMapping apiSpec) (M.keys $ AS.resources apiSpec)
+             $ map (generateSchema fieldMapping apiSpec) (M.keys $ AS.structs apiSpec)
 
 -- | Generates the information of a resource/struct.
 generateSchema :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
                -> AS.ApiSpec -- ^ The specification of the web service
-               -> AS.Id -- ^ The name of the resource/struct
+               -> AS.Id -- ^ The name of the struct
                -> TC.Schema
-generateSchema fieldMapping apiSpec resId =
-  TC.Schema { TC.schemaName = resId
+generateSchema fieldMapping apiSpec strId =
+  TC.Schema { TC.schemaName = strId
             , TC.schemaRoute = schemaRoute'
             , TC.writable = writable'
             , TC.hasKeyField = hasKeyField
             , TC.keyField = keyField
             , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
   where
-    (schemaRoute', writable') = fromJust $ M.lookup resId $ AS.resources apiSpec
-    structInfo = fromJust $ M.lookup resId $ AS.structs apiSpec
+    (schemaRoute', writable') = maybe (Nothing, False) (\(r, w) -> (Just TC.Route { TC.route = r }, w)) (M.lookup strId $ AS.resources apiSpec)
+    structInfo = fromJust $ M.lookup strId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
     -- Leave empty if it doesn't exist
     keyField = fromMaybe "" maybeKeyField

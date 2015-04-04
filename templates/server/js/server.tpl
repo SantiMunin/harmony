@@ -41,14 +41,15 @@ var {{schemaName}} = mongoose.model('{{schemaName}}', {{schemaName}}Schema);
 {{/schema}}
 
 {{#schema}}
-app.get('{{&schemaRoute}}', function(req, res) {
+{{#schemaRoute}}
+app.get('{{&route}}', function(req, res) {
         {{schemaName}}.find(function(err, result) {
           if (err) return console.error(err);
             res.send(result);
          });
 });
 
-app.get('{{&schemaRoute}}/:id', function(req, res) {
+app.get('{{&route}}/:id', function(req, res) {
         {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id }, function(err, result) {
           if (err) return console.error(err);
             if (result.length == 0) {
@@ -61,7 +62,7 @@ app.get('{{&schemaRoute}}/:id', function(req, res) {
 
 {{#writable}}
 {{^hasKeyField}}
-app.post('{{&schemaRoute}}', function(req, res) {
+app.post('{{&route}}', function(req, res) {
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
     if (err) {
       res.status(500).send(err);
@@ -74,7 +75,7 @@ app.post('{{&schemaRoute}}', function(req, res) {
 });
 {{/hasKeyField}}
 
-app.put('{{&schemaRoute}}/:id', function(req, res) {
+app.put('{{&route}}/:id', function(req, res) {
   {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true, runValidators : true}, function(err, result) {
     if (err) {
       res.status(500).send(err);
@@ -84,7 +85,7 @@ app.put('{{&schemaRoute}}/:id', function(req, res) {
   });
 });
 
-app.delete('{{&schemaRoute}}/:id', function(req, res) {
+app.delete('{{&route}}/:id', function(req, res) {
   {{schemaName}}.remove({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id}, function(err, result) {
       if (err) { 
         res.status(500).send(err);
@@ -93,6 +94,7 @@ app.delete('{{&schemaRoute}}/:id', function(req, res) {
     res.status(200).send();
 });
 {{/writable}}
+{{/schemaRoute}}
 {{/schema}}
 
 app.listen(args[0]);
