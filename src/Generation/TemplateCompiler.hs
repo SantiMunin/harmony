@@ -15,8 +15,8 @@ import           Text.Hastache
 import           Text.Hastache.Context
 
 -- | An enum value
-data EnumValue = EnumValue { value :: String } deriving (Show, Data, Typeable, Eq)
-data Route = Route { route :: String } deriving (Show, Data, Typeable, Eq)
+data StrValue = StrValue { value :: String } deriving (Show, Data, Typeable, Eq)
+data EnumValues = EnumValue { values :: [StrValue] } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema variable. It is a field of a struct.
 -- <b>DISCLAIMER</b>: there is some redundancy but the focus of this module is to make the templating easy.
@@ -24,8 +24,7 @@ data SchemaVar = SchemaVar { varName        :: String
                            , varType        :: String
                            , isList         :: Bool
                            -- Only if it is an enum (varType == String and values not empty)
-                           , isEnum         :: Bool
-                           , enumValues     :: [EnumValue]
+                           , isEnum         :: Maybe EnumValues
                            , isStruct       :: Bool
                            , referredStruct :: String
                            , isKey          :: Bool
@@ -35,7 +34,7 @@ data SchemaVar = SchemaVar { varName        :: String
 
 -- | A schema is a struct (it has a name, a route, a write mode, etc...).
 data Schema = Schema { schemaName  :: String
-                     , schemaRoute :: Maybe Route
+                     , schemaRoute :: Maybe StrValue
                      , writable    :: Bool
                      , hasKeyField :: Bool
                      , keyField    :: String
@@ -56,8 +55,8 @@ render templateLoc service =
 
 
 derive makeArbitrary ''Service
-derive makeArbitrary ''Route
+derive makeArbitrary ''StrValue
 derive makeArbitrary ''Schema
 derive makeArbitrary ''SchemaVar
-derive makeArbitrary ''EnumValue
+derive makeArbitrary ''EnumValues
 

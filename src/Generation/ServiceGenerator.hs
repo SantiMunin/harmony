@@ -29,7 +29,7 @@ generateSchema fieldMapping apiSpec strId =
             , TC.keyField = keyField
             , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
   where
-    (schemaRoute', writable') = maybe (Nothing, False) (\(r, w) -> (Just TC.Route { TC.route = r }, w)) (M.lookup strId $ AS.resources apiSpec)
+    (schemaRoute', writable') = maybe (Nothing, False) (\(r, w) -> (Just TC.StrValue { TC.value = r }, w)) (M.lookup strId $ AS.resources apiSpec)
     structInfo = fromJust $ M.lookup strId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
     -- Leave empty if it doesn't exist
@@ -51,8 +51,7 @@ generateVars fieldMapping apiSpec = map getVarFromField
       TC.SchemaVar { TC.varName = name
                    , TC.varType = fieldMapping type'
                    , TC.isList = isList type'
-                   , TC.isEnum = isEnum type'
-                   , TC.enumValues = getValues type'
+                   , TC.isEnum = if isEnum type' then Just $ getValues type' else Nothing
                    , TC.isStruct = isStruct type'
                    , TC.referredStruct = referredStruct type'
                    , TC.isKey = AS.PrimaryKey `S.member` modifs
@@ -60,9 +59,9 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.isHidden = AS.Hidden `S.member` modifs
                    }
         where
-          getValues (AS.TEnum enumId) = map TC.EnumValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
+          getValues (AS.TEnum enumId) = TC.EnumValue $ map TC.StrValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
           getValues (AS.TList t') = getValues t'
-          getValues _ = []
+          getValues other = error $ "getValues called on a non-enum type: " ++ show other
           isEnum (AS.TEnum _) = True
           isEnum (AS.TList t') = isEnum t'
           isEnum _ = False

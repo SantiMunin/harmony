@@ -14,7 +14,7 @@ var {{schemaName}}Schema = new mongoose.Schema({
   {{varName}} : { type: [{{#isStruct}}{{referredStruct}}Schema{{/isStruct}}{{^isStruct}}{{varType}}{{/isStruct}}]
                {{/isList}}{{^isList}}
   {{varName}} : { type: {{#isStruct}}mongoose.Schema.ObjectId, ref:'{{referredStruct}}Schema'{{/isStruct}}{{^isStruct}}{{varType}}{{/isStruct}} 
-               {{/isList}} {{#isKey}}, unique: true, index: true, dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} {{#isEnum}}, enum: [{{/isEnum}}{{#enumValues}}'{{value}}',{{/enumValues}}{{/enumData}}{{#isEnum}}]{{/isEnum}}{{/isStruct}} },
+               {{/isList}} {{#isKey}}, unique: true, index: true, dropDupes: true {{/isKey}} {{#isRequired}}, required: true {{/isRequired}} {{#isEnum}}, enum: [{{/isEnum}}{{#isEnum}}{{#values}}'{{value}}',{{/values}}{{/isEnum}}{{#isEnum}}]{{/isEnum}}{{/isStruct}} },
 {{/schemaVars}}
 });
 
