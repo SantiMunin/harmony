@@ -1,11 +1,12 @@
+# Harmony
 Harmony is a web service specification compiler that generates implementation (server and client) and tests.
 
 ## Targets supported
 
 + Server
-  * Node.js
+  * Node.js (`-sjs`)
 + Client
-  + Python
+  + Python (`-cpython`)
 + Test: TODO
 
 ## Usage
@@ -17,7 +18,7 @@ After installing the package (`cabal install`), you will get the `harmony` execu
       -s[SERVERS]     --server[=SERVERS]         Desired output for the server
       -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
 
-
+Check the [Targets supported](#Targets_supported) section to figure out the code related to each target.
 ## Syntax
 
 The input file should follow the syntax specified in `language_spec/Language.cf`. Example:
