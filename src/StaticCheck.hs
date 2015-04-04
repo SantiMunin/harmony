@@ -135,7 +135,7 @@ checkResources ress = do
       definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
       unless (resName res `M.member` definedStructs)
              (fail $ "Resource " ++ resName res ++ " does not refer to a defined struct.")
-    addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resName res) ("/" ++ resRoute res, resIsWritable res) (AS.resources as)}))
+    addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resName res) (resRoute res, resIsWritable res) (AS.resources as)}))
 
 getEnumNames :: [EnumType] -> [String]
 getEnumNames = map enumName

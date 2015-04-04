@@ -21,6 +21,7 @@ var {{schemaName}}Schema = new mongoose.Schema({
 {{schemaName}}Schema.set('toJSON', {
   transform: function (doc, ret, options) {
     {{^hasKeyField}}ret.id = ret._id{{/hasKeyField}}
+    {{#schemaVars}}{{#isHidden}}delete ret.{{varName}};{{/isHidden}}{{/schemaVars}}
     delete ret._id
     delete ret.__v
   }

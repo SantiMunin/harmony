@@ -56,7 +56,9 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.isStruct = isStruct type'
                    , TC.referredStruct = referredStruct type'
                    , TC.isKey = AS.PrimaryKey `S.member` modifs
-                   , TC.isRequired = AS.Required `S.member` modifs }
+                   , TC.isRequired = AS.Required `S.member` modifs
+                   , TC.isHidden = AS.Hidden `S.member` modifs
+                   }
         where
           getValues (AS.TEnum enumId) = map TC.EnumValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
           getValues (AS.TList t') = getValues t'

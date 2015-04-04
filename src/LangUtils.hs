@@ -48,7 +48,7 @@ resName (Res (Ident name) _ _) = name
 -- | Extracts the route of a resource.
 resRoute :: Resource -- ^ Resource information
          -> String -- ^ Route of the resource
-resRoute (Res _ route _) = route
+resRoute (Res _ (RouteIdent route) _) = route
 
 -- | Extracts the write mode of a resource.
 resIsWritable :: Resource -- ^ Resource information

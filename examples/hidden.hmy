@@ -1,0 +1,6 @@
+service_name: HiddenField
+service_version: 1.0.0
+
+struct Str { name : String, @Hidden password: String }
+
+resource Str ("/str")
