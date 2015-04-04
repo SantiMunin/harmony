@@ -38,6 +38,9 @@ var {{schemaName}}Schema = new mongoose.Schema({
 
 var {{schemaName}} = mongoose.model('{{schemaName}}', {{schemaName}}Schema);
 
+{{/schema}}
+
+{{#schema}}
 app.get('{{&schemaRoute}}', function(req, res) {
         {{schemaName}}.find(function(err, result) {
           if (err) return console.error(err);
