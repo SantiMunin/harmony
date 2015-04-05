@@ -20,16 +20,15 @@ data EnumValues = EnumValue { values :: [StrValue] } deriving (Show, Data, Typea
 
 -- | A schema variable. It is a field of a struct.
 -- <b>DISCLAIMER</b>: there is some redundancy but the focus of this module is to make the templating easy.
-data SchemaVar = SchemaVar { varName        :: String
-                           , varType        :: String
-                           , isList         :: Bool
+data SchemaVar = SchemaVar { varName    :: String
+                           , varType    :: String
+                           , isList     :: Bool
                            -- Only if it is an enum (varType == String and values not empty)
-                           , isEnum         :: Maybe EnumValues
-                           , isStruct       :: Bool
-                           , referredStruct :: String
-                           , isKey          :: Bool
-                           , isRequired     :: Bool
-                           , isHidden       :: Bool
+                           , isEnum     :: Maybe EnumValues
+                           , isStruct   :: Bool
+                           , isKey      :: Bool
+                           , isRequired :: Bool
+                           , isHidden   :: Bool
                            } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema is a struct (it has a name, a route, a write mode, etc...).

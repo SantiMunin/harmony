@@ -53,7 +53,6 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.isList = isList type'
                    , TC.isEnum = if isEnum type' then Just $ getValues type' else Nothing
                    , TC.isStruct = isStruct type'
-                   , TC.referredStruct = referredStruct type'
                    , TC.isKey = AS.PrimaryKey `S.member` modifs
                    , TC.isRequired = AS.Required `S.member` modifs
                    , TC.isHidden = AS.Hidden `S.member` modifs
@@ -70,7 +69,4 @@ generateVars fieldMapping apiSpec = map getVarFromField
           isStruct (AS.TStruct _) = True
           isStruct (AS.TList t') = isStruct t'
           isStruct _ = False
-          referredStruct (AS.TStruct str) = str
-          referredStruct (AS.TList t') = referredStruct t'
-          referredStruct _ = ""
 
