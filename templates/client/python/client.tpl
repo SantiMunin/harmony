@@ -8,7 +8,7 @@ class {{schemaName}}:
 {{#schemaVars}}
 {{#isStruct}}
 {{#isList}}
-        self._info["{{varName}}"] = map((lambda x: x.toDict()), {{varName}})
+        self._info["{{varName}}"] = map((lambda x: x if isinstance(x, dict) else x.toDict()), {{varName}})
 {{/isList}}
 {{^isList}}
         self._info["{{varName}}"] = {{varName}}.toDict()
@@ -19,15 +19,15 @@ class {{schemaName}}:
 {{/isStruct}}
 {{/schemaVars}}
 
-    @classmethod
-    def fromDict(self, dict):
+    @staticmethod
+    def fromDict(dict):
       return {{schemaName}}({{#schemaVars}}dict["{{varName}}"],{{/schemaVars}})
     
     def toDict(self):
       return self._info
 
-    @classmethod
-    def fromJSON(self, text):
+    @staticmethod
+    def fromJSON(text):
         return {{schemaName}}.fromDict(json.loads(text))
 
     def toJSON(self):
