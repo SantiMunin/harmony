@@ -39,6 +39,7 @@ build-type:          Custom
 data-files:          templates/server/js/package.tpl
                    , templates/server/js/server.tpl
                    , templates/client/python/client.tpl
+                   , templates/client/python/test.tpl
 
 
 -- Extra files to be distributed with the package, such as examples or a 

@@ -32,7 +32,8 @@ generateJSServer = generateOutput (files, templates, fieldMapping)
   where
     files = []
     templates = [ ("templates/server/js/server.tpl", "js")
-                , ("templates/server/js/package.tpl", "json") ]
+                , ("templates/server/js/package.tpl", "json")
+                ]
     fieldMapping AS.TString = "String"
     fieldMapping AS.TInt = "Number"
     fieldMapping AS.TDouble = "Number"
@@ -47,11 +48,15 @@ generateJSClient = error "Javascript client is not implemented yet"
 generatePythonClient = generateOutput (files, templates, fieldMapping)
   where
     files = []
-    templates = [("templates/client/python/client.tpl", "py")]
-    -- Dummy values so an error can be detected after serialization
-    fieldMapping AS.TString = "error:PythonNoTypes (String)"
-    fieldMapping AS.TInt = "error:PythonNoTypes (Int)"
+    templates = [ ("templates/client/python/client.tpl", "py")
+                , ("templates/client/python/test.tpl", "py")
+                ]
+    -- These are the generators for the different types used by Hypothesis.
+    fieldMapping AS.TString = "sampled_from([\"astring\", \"anotherstring\"])"
+    fieldMapping AS.TInt = "int"
     fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
+    fieldMapping (AS.TStruct name) = name ++ "Data"
+    fieldMapping (AS.TList t) = fieldMapping t
     fieldMapping _ = error "Custom types not implemented yet"
 
 -- | Uses all the information provided by the user (and the input file) and generates
