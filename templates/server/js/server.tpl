@@ -70,7 +70,7 @@ app.post('{{&route}}', function(req, res) {
     }
     res
       .status(201)
-      .json('{"id" : "'+obj._id+'"}');
+      .json({id : obj._id});
    });
 });
 {{/hasKeyField}}
