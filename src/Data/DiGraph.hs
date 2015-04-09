@@ -1,4 +1,17 @@
-module Data.DiGraph(Graph (), empty, create, addNode, addAllNodes, addNeighbors, addAllNeighbors, contains, getNeighbors, getNodes, isEmpty, hasCycle, generateInverseDependencyList) where
+module Data.DiGraph( Graph ()
+                   , empty
+                   , create
+                   , addNode
+                   , addAllNodes
+                   , addNeighbors
+                   , addAllNeighbors
+                   , contains
+                   , deleteNode
+                   , getNeighbors
+                   , getNodes
+                   , isEmpty
+                   , hasCycle
+                   , generateInverseDependencyList) where
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -18,6 +31,13 @@ create pairs = addAllNeighbors pairs $ addAllNodes (map fst pairs) empty
 addNode :: Ord a => a -> Graph a -> Graph a
 addNode v graph = graph { nodes = v `S.insert` nodes graph }
 
+deleteNode :: Ord a => a -> Graph a -> Graph a
+deleteNode v graph = graph { nodes = v `S.delete` nodes graph
+                           , next = deleteNodeFromNext v $ next graph}
+  where
+    deleteNodeFromNext v m = rmFromAllSets v $ M.delete v m
+    rmFromAllSets v = M.map (S.delete v)
+
 addAllNodes :: Ord a => [a] -> Graph a -> Graph a
 addAllNodes nodes graph = foldl (\g n -> addNode n g) graph nodes
 
@@ -32,7 +52,12 @@ contains :: Ord a => Graph a -> a -> Bool
 contains graph v = v `S.member` nodes graph
 
 getNeighbors :: Ord a => Graph a -> a -> Maybe [a]
-getNeighbors graph v = fmap S.toList $ M.lookup v $ next graph
+getNeighbors graph v = do
+  ns <- M.lookup v $ next graph
+  let nList = S.toList ns
+  if null nList
+  then Nothing
+  else return nList
 
 getNodes :: Ord a => Graph a -> [a]
 getNodes = S.toList . nodes
@@ -49,6 +74,21 @@ hasCycle graph | isEmpty graph = False
                                     Nothing -> False
                                     Just next -> any (flip go $ node `S.insert` visited) next
 
+dfs :: Ord a => Graph a -> Maybe a
+dfs graph | isEmpty graph = Nothing
+          | otherwise = go (head $ getNodes graph) graph
+  where
+    go :: Ord a => a -> Graph a -> Maybe a
+    go node graph =
+      case getNeighbors graph node of
+        Nothing -> return node
+        Just [] -> error "getNeighbors returning \"Just []\" should never happen"
+        Just (node':_) -> go node' graph
 
-generateInverseDependencyList :: Graph a -> (a -> [a]) -> [a]
-generateInverseDependencyList graph depFun = undefined
+generateInverseDependencyList :: Ord a => Graph a -> [a]
+generateInverseDependencyList graph = go graph []
+  where
+    go graph accum =
+      case dfs graph of
+        Nothing -> reverse accum
+        Just n -> go (deleteNode n graph) (n:accum)
