@@ -74,6 +74,7 @@ library
                      , Generation.OutputGenerator
                      , Generation.ServiceGenerator
                      , Generation.TemplateCompiler
+                     , Data.DiGraph
                      , Language.Abs
                      , Language.ErrM
                      , Language.Lex
