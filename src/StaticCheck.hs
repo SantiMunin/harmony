@@ -4,6 +4,7 @@ module StaticCheck (staticCheck) where
 import qualified ApiSpec             as AS
 import           Control.Monad.State as CMS
 import           Data.Char
+import qualified Data.DiGraph        as DG
 import qualified Data.Foldable       as F
 import qualified Data.Map            as M
 import           Data.Maybe
@@ -28,7 +29,7 @@ initialEnv = (S.empty,
               AS.AS { AS.name = ""
                     , AS.version = ""
                     , AS.enums = M.empty
-                    , AS.structs = M.empty
+                    , AS.structs = []
                     , AS.resources = M.empty
                     }
              )
@@ -51,6 +52,7 @@ staticCheck spec@(Spec _ _ enums structs resources) = do
       readAndCheckEnums enums
       readAndCheckStructs structs
       checkResources resources
+      sortStructsByDependencyOrder
 
 -- | Looks for name clashes in the definitions.
 -- Note that it skips resources as those need to have the same name as some struct.
@@ -111,7 +113,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
       readStruct :: StructType -> StaticCheck ()
       readStruct (DefStr (Ident name) fields) =
         CMS.modify (\(names, as) ->
-                     (names, as { AS.structs = M.insert name (map (readField as) fields) (AS.structs as)}))
+                     (names, as { AS.structs = (name, map (readField as) fields):AS.structs as}))
       readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
                                         | map toLower name == "pk" = AS.PrimaryKey
                                         | map toLower name == "immutable" = AS.Immutable
@@ -133,7 +135,7 @@ checkResources ress = do
            (Just repeated) -> fail $ "Route " ++ repeated ++ " is defined more than once"
     resourceOk res = do
       definedStructs <- CMS.gets (\(_, as) -> AS.structs as)
-      unless (resName res `M.member` definedStructs)
+      unless (isJust $ lookup (resName res) definedStructs)
              (fail $ "Resource " ++ resName res ++ " does not refer to a defined struct.")
     addResource res = CMS.modify (\(names, as) -> (names, as { AS.resources = M.insert (resName res) (resRoute res, resIsWritable res) (AS.resources as)}))
 
@@ -152,3 +154,24 @@ findDuplicates list = go list S.empty S.empty
     lowerCaseStr :: String -> String
     lowerCaseStr = map toLower
 
+-- | Builds a dependency graph to sort the structs so forall a,b -> if "a" depends on "b", "b" is
+-- first in the list. It fails if there is a cycle in the graph.
+sortStructsByDependencyOrder :: StaticCheck ()
+sortStructsByDependencyOrder = do
+  apiSpec <- CMS.gets snd
+  let g = createGraph apiSpec
+  unless (not $ DG.hasCycle g) (fail "There is a cycle in the struct definitions")
+  let priorityList = DG.generateInverseDependencyList g
+  let sortedStructs = matchOrder priorityList (AS.structs apiSpec)
+  CMS.modify (\(ns, as) -> (ns, as { AS.structs = sortedStructs }))
+    where
+      createGraph :: AS.ApiSpec -> DG.Graph AS.Id
+      createGraph apiSpec = foldl (\g str -> DG.addNeighbors (fst str) (getDeps str) g) DG.empty (AS.structs apiSpec)
+        where
+          getDeps (_, fields) = map (\(AS.FI (_, t, _)) -> AS.strName t) $ filter AS.isStructField fields
+      matchOrder :: Eq a => [a] -> [(a, b)] -> [(a,b)]
+      matchOrder pList list = go pList list []
+        where
+          go :: Eq a => [a] -> [(a, b)] -> [(a, b)] -> [(a, b)]
+          go [] _ acc = reverse acc
+          go (x:xs) list acc = go xs list ((x, fromJust (lookup x list)):acc)

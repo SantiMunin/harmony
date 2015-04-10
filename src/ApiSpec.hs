@@ -33,7 +33,7 @@ data Modifier =
 derive makeArbitrary ''Modifier
 
 -- | A field has a type, an identifier and a set of modifiers.
-newtype FieldInfo = FI (Id, Type, S.Set Modifier) deriving Show
+newtype FieldInfo = FI (Id, Type, S.Set Modifier) deriving (Show, Eq, Ord)
 
 -- | A struct is a list of fields.
 type StructInfo = [FieldInfo]
@@ -51,7 +51,7 @@ data Type = TInt
           | TString
           | TEnum Id
           | TStruct Id
-          | TList Type deriving (Eq, Show)
+          | TList Type deriving (Eq, Ord, Show)
 
 instance (CoArbitrary Type) where
   coarbitrary = coarbitraryShow
@@ -60,7 +60,7 @@ instance (CoArbitrary Type) where
 type Enums = M.Map Id EnumInfo
 
 -- | Map from struct id to its info.
-type Structs = M.Map Id StructInfo
+type Structs = [(Id, StructInfo)]
 
 -- | Map from resource id to the route and the mode.
 type Resources = M.Map Id ResourceInfo
@@ -88,6 +88,22 @@ getPrimaryKey structInfo =
     _ -> error "A struct should have at most one specified primary key."
   where
     hasPkModifier (FI (_, _, modifiers)) = PrimaryKey `S.member` modifiers
+
+-- | Finds out if a fieldinfo is relative to a struct
+isStructField :: FieldInfo -> Bool
+isStructField (FI (_, t, _)) = isStruct t
+
+-- | Find outs if a type is a struct
+isStruct :: Type -> Bool
+isStruct (TStruct _) = True
+isStruct (TList t) = isStruct t
+isStruct _ = False
+
+-- | Get the name of a struct
+strName :: Type -> String
+strName (TStruct t) = t
+strName (TList t) = strName t
+strName other = error $ "strName of a non struct type (" ++ show other ++ ")"
 
 -- Testing
 
@@ -157,7 +173,7 @@ instance (Arbitrary ApiSpec) where
     return AS { name = name'
               , version = version'
               , enums = M.fromList enums'
-              , structs = M.fromList structs'
+              , structs = structs'
               , resources = M.fromList resources'
               }
     where

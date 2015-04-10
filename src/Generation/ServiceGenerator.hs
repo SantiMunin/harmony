@@ -14,7 +14,7 @@ generateService :: AS.ApiSpec -- ^ The specification of the web service
 generateService apiSpec fieldMapping =
   TC.Service (AS.name apiSpec)
              (AS.version apiSpec)
-             $ map (generateSchema fieldMapping apiSpec) (M.keys $ AS.structs apiSpec)
+             $ map (generateSchema fieldMapping apiSpec) (map fst $ AS.structs apiSpec)
 
 -- | Generates the information of a resource/struct.
 generateSchema :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
@@ -30,7 +30,7 @@ generateSchema fieldMapping apiSpec strId =
             , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
   where
     (schemaRoute', writable') = maybe (Nothing, False) (\(r, w) -> (Just TC.StrValue { TC.value = r }, w)) (M.lookup strId $ AS.resources apiSpec)
-    structInfo = fromJust $ M.lookup strId $ AS.structs apiSpec
+    structInfo = fromJust $ lookup strId $ AS.structs apiSpec
     maybeKeyField = AS.getPrimaryKey structInfo
     -- Leave empty if it doesn't exist
     keyField = fromMaybe "" maybeKeyField

@@ -3,7 +3,7 @@ module Generation.ServiceGeneratorSpec where
 
 import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
-import           Data.Maybe                  (fromJust, isNothing)
+import           Data.Maybe                  (fromJust, isJust, isNothing)
 import           Generation.ServiceGenerator
 import qualified Generation.TemplateCompiler as TC
 import           Test.Hspec
@@ -51,7 +51,7 @@ prop_structsCorrectlyTranslated apiSpec =
       if TC.isStruct schemaVar
       then varInSpecStructs schemaVar
       else not $ varInSpecStructs schemaVar
-    varInSpecStructs var = TC.varType var `M.member` apiSpecStructInfo
+    varInSpecStructs var = isJust $ lookup (TC.varType var) apiSpecStructInfo
 
 prop_handlesPrimaryKeyCorrectly :: AS.ApiSpec -> Property
 prop_handlesPrimaryKeyCorrectly apiSpec =

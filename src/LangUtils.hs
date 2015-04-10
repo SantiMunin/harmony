@@ -4,6 +4,7 @@ module LangUtils where
 
 import qualified ApiSpec      as AS
 import qualified Data.Map     as M
+import           Data.Maybe
 import           Language.Abs
 
 -- | Extracts the name of the 'Specification' (AST).
@@ -80,6 +81,7 @@ fieldSpecType _ FDouble = AS.TDouble
 fieldSpecType as (FDefined (Ident name)) = getType as name
   where
     getType env t | t `M.member` AS.enums env = AS.TEnum t
-                  | t `M.member` AS.structs env = AS.TStruct t
+                  | isJust $ lookup t $ AS.structs env = AS.TStruct t
                   | otherwise = error $ "getType: " ++ t ++ " is not defined."
 fieldSpecType as (FList type') = AS.TList $ fieldSpecType as type'
+
