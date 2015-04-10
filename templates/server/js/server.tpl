@@ -42,14 +42,14 @@ var {{schemaName}} = mongoose.model('{{schemaName}}', {{schemaName}}Schema);
 
 {{#schema}}
 {{#schemaRoute}}
-app.get('{{&route}}', function(req, res) {
+app.get('{{&value}}', function(req, res) {
         {{schemaName}}.find(function(err, result) {
           if (err) return console.error(err);
             res.send(result);
          });
 });
 
-app.get('{{&route}}/:id', function(req, res) {
+app.get('{{&value}}/:id', function(req, res) {
         {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id }, function(err, result) {
           if (err) return console.error(err);
             if (result.length == 0) {
@@ -62,7 +62,7 @@ app.get('{{&route}}/:id', function(req, res) {
 
 {{#writable}}
 {{^hasKeyField}}
-app.post('{{&route}}', function(req, res) {
+app.post('{{&value}}', function(req, res) {
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
     if (err) {
       res.status(500).send(err);
@@ -75,7 +75,7 @@ app.post('{{&route}}', function(req, res) {
 });
 {{/hasKeyField}}
 
-app.put('{{&route}}/:id', function(req, res) {
+app.put('{{&value}}/:id', function(req, res) {
   {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true, runValidators : true}, function(err, result) {
     if (err) {
       res.status(500).send(err);
@@ -85,7 +85,7 @@ app.put('{{&route}}/:id', function(req, res) {
   });
 });
 
-app.delete('{{&route}}/:id', function(req, res) {
+app.delete('{{&value}}/:id', function(req, res) {
   {{schemaName}}.remove({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id}, function(err, result) {
       if (err) { 
         res.status(500).send(err);

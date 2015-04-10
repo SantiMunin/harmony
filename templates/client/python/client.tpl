@@ -47,21 +47,21 @@ class {{schemaName}}:
 {{#schema}}{{#schemaRoute}}
 
 def get{{schemaName}}_list(url):
-    return requests.get(url + "{{&schemaRoute}}")
+    return requests.get(url + "{{&value}}")
 
 def get{{schemaName}}(url, item_id):
-    return requests.get(url + "{{&schemaRoute}}" + "/" + item_id)
+    return requests.get(url + "{{&value}}" + "/" + item_id)
 {{#writable}}
 
 def put{{schemaName}}(url, item_id, item):
-    return requests.put(url + "{{&schemaRoute}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})
+    return requests.put(url + "{{&value}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})
 {{^hasKeyField}}
 
 def post{{schemaName}}(url, item):
-    return requests.post(url + "{{&schemaRoute}}", data=item.toJSON(), headers = {'content-type': 'application/json'})
+    return requests.post(url + "{{&value}}", data=item.toJSON(), headers = {'content-type': 'application/json'})
 {{/hasKeyField}}
 
 def delete{{schemaName}}(url, item_id):
-    return requests.delete(url + "{{&schemaRoute}}" + "/" + item_id)
+    return requests.delete(url + "{{&value}}" + "/" + item_id)
 {{/writable}}
 {{/schemaRoute}}{{/schema}}
