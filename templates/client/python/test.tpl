@@ -3,6 +3,7 @@ from hypothesis import *
 from hypothesis.specifiers import * 
 import unittest
 import copy
+import sys
 
 class ServiceTest(unittest.TestCase):
 
@@ -90,4 +91,9 @@ class Test{{schemaName}}(ServiceTest):
 {{/schema}}
 
 if __name__ == '__main__':
-    unittest.main()
+    if len(sys.argv) != 2:
+        print("Url must be specified. Example: python tests.py http://localhost:3000")
+    else:
+        url = sys.argv[1]
+        del sys.argv[1]
+        unittest.main(argv = None)
