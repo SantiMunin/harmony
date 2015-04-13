@@ -76,7 +76,7 @@ app.post('{{&value}}', function(req, res) {
 {{/hasKeyField}}
 
 app.put('{{&value}}/:id', function(req, res) {
-  {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, req.body, {upsert : true, runValidators : true}, function(err, result) {
+  {{schemaName}}.update({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}} : req.params.id }, new {{schemaName}}(req.body), {upsert : true, runValidators : true}, function(err, result) {
     if (err) {
       res.status(500).send(err);
     } else {
