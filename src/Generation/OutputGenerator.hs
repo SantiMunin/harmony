@@ -52,7 +52,7 @@ generatePythonClient = generateOutput (files, templates, fieldMapping)
                 , ("templates/client/python/test.tpl", "py")
                 ]
     -- These are the generators for the different types used by Hypothesis.
-    fieldMapping AS.TString = "sampled_from([\"astring\", \"anotherstring\"])"
+    fieldMapping AS.TString = "strategy([integers_in_range(32,127)]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
     fieldMapping AS.TInt = "int"
     fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
     fieldMapping (AS.TStruct name) = name ++ "Data"
