@@ -1,0 +1,38 @@
+service_name: BugTracker
+service_version: 1.0.0
+
+enum Status { OPEN, CLOSED, IN_PROGRESS }
+
+struct User {
+  @Unique
+  @Required
+  name : String,
+  team : String,
+  @Unique
+  ranking : Int,
+  @Hidden
+  password : String
+}
+
+struct Category {
+  @Unique
+  name : String
+}
+
+struct Modification {
+  author: User,
+  comment: String
+}
+
+struct Bug {
+  openBy : User,
+  openAt : Long,
+  category : Category,
+  modifications : [Modification],
+  @Required
+  status : Status
+}
+
+
+resource Bug("/bug")
+resource Category("/category")

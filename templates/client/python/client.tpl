@@ -8,7 +8,7 @@ class {{schemaName}}:
 {{#schemaVars}}
 {{#isStruct}}
 {{#isList}}
-        self._info["{{varName}}"] = map((lambda x: x if isinstance(x, dict) else x.toDict()), {{varName}})
+        self._info["{{varName}}"] = map((lambda x: x if (isinstance(x, dict) or isinstance(x, list)) else x.toDict()), {{varName}})
 {{/isList}}
 {{^isList}}
         self._info["{{varName}}"] = {{varName}}.toDict()

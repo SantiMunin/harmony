@@ -53,13 +53,13 @@ generatePythonClient = generateOutput (files, templates, fieldMapping)
                 , ("templates/client/python/test.tpl", "py")
                 ]
     -- These are the generators for the different types used by Hypothesis.
-    fieldMapping AS.TString = "strategy([integers_in_range(32,127)]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
-    fieldMapping AS.TInt = "int"
+    fieldMapping AS.TString = "strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
+    fieldMapping AS.TInt = "integers_in_range(-1000,1000)"
     fieldMapping AS.TLong = "long"
     fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
     fieldMapping (AS.TEnum t) = "error: no directly translation from enum type to Hypothesis type"
     fieldMapping (AS.TStruct name) = name ++ "Data"
-    fieldMapping (AS.TList t) = fieldMapping t
+    fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
 
 -- | Uses all the information provided by the user (and the input file) and generates

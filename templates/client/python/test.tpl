@@ -49,24 +49,22 @@ class ServiceTest(unittest.TestCase):
         return item
 
 Settings.default.max_examples = 10000
-Settings.default.timeout = 1
+Settings.default.timeout = 5
 
 {{#schema}}
 {{schemaName}}Data = {
 {{#schemaVars}}
 {{#isEnum}}
-  '{{varName}}': {{#isList}}[{{/isList}}one_of([{{#values}}"{{value}}", {{/values}}]){{#isList}}]{{/isList}},
+  '{{varName}}': sampled_from([{{#values}}"{{value}}", {{/values}}]),
 {{/isEnum}}
 {{^isEnum}}
 {{^isKey}}
-  '{{varName}}': {{#isList}}[{{/isList}}{{&varType}}{{#isList}}]{{/isList}}, 
+  '{{varName}}': {{&varType}}, 
 {{/isKey}}
 {{/isEnum}}
 {{/schemaVars}}
 }
 {{/schema}}
-
-url = "http://localhost:3000"
 
 {{#schema}}
 {{#schemaRoute}}
