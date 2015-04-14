@@ -33,14 +33,12 @@ class {{schemaName}}:
     def toJSON(self):
         return json.dumps(self._info)
 {{#schemaVars}}
-{{^isKey}}
 
     def get_{{varName}}(self):
         return self._info["{{varName}}"]
 
     def set_{{varName}}(self, {{varName}}):
         self._info["{{varName}}"] = {{varName}}
-{{/isKey}}
 {{/schemaVars}}
 {{/schema}}
 
@@ -52,6 +50,12 @@ def get{{schemaName}}_list(url):
 def get{{schemaName}}(url, item_id):
     return requests.get(url + "{{&value}}" + "/" + item_id)
 {{#writable}}
+
+{{#hasKeyField}}
+
+def put{{schemaName}}(url, item):
+    return requests.put(url + "{{&value}}" + "/" + item.get_{{keyField}}(), data=item.toJSON(), headers = {'content-type': 'application/json'})
+{{/hasKeyField}}
 
 def put{{schemaName}}(url, item_id, item):
     return requests.put(url + "{{&value}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})

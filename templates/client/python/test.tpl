@@ -49,7 +49,9 @@ Settings.default.timeout = 1
 {{#schema}}
 {{schemaName}}Data = {
 {{#schemaVars}}
+{{^isKey}}
   '{{varName}}': {{#isList}}[{{/isList}}{{&varType}}{{#isList}}]{{/isList}}, 
+{{/isKey}}
 {{/schemaVars}}
 }
 {{/schema}}
@@ -59,26 +61,46 @@ url = "http://localhost:3000"
 {{#schema}}
 {{#schemaRoute}}
 class Test{{schemaName}}(ServiceTest):
-  @given({{schemaName}}Data, {{schemaName}}Data)
-  def test_insert_edit_delete(self, data, data2):
+  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data)
+  def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2):
 {{#schemaVars}}
+{{#isKey}}
+    {{varName}} = id
+{{/isKey}}
+{{^isKey}}
     {{varName}} = data["{{varName}}"]
+{{/isKey}}
 {{/schemaVars}}
+{{#hasKeyField}}
+    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
+    self.assertEqual(200, putResponse.status_code)
+{{/hasKeyField}}
+{{^hasKeyField}}
     postResponse = post{{schemaName}}(url, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
     self.assertEqual(201, postResponse.status_code)
     id = json.loads(postResponse.text)["id"]
+{{/hasKeyField}}
 {{#schemaVars}}
+{{^isKey}}
     self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id).text).get_{{varName}}())
+{{/isKey}}
 {{/schemaVars}}
 
 {{#schemaVars}}
+{{#isKey}}
+    {{varName}} = id
+{{/isKey}}
+{{^isKey}}
     {{varName}} = data2["{{varName}}"]
+{{/isKey}}
 {{/schemaVars}}
 
     putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
     self.assertEqual(200, putResponse.status_code)
 {{#schemaVars}}
+{{^isKey}}
     self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id).text).get_{{varName}}())
+{{/isKey}}
 {{/schemaVars}}
 
     deleteResponse = delete{{schemaName}}(url, id)
