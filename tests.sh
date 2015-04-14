@@ -13,7 +13,7 @@ function checkGood {
   harmony -sjs -cpython examples/good/$1
   exitWithMessageIfFailure "Harmony couldn't compile examples/good/$1"
   echo "Installing node.js dependencies..."
-  npm install harmony_output/server/js > /dev/null
+  npm-cache install harmony_output/server/js > /dev/null
   exitWithMessageIfFailure "There was a problem while executing npm install"
   echo "Executing server in background"
   node harmony_output/server/js/server.js $PORT $MONGO_ADD &
