@@ -21,7 +21,7 @@ type StaticCheck a = StateT Env Err a
 -- | List of reserved words.
 reservedWords :: [String]
 -- TODO(18): complete list
-reservedWords = ["Int", "String", "Resource", "Enum", "Struct"]
+reservedWords = ["Long", "Int", "String", "Resource", "Enum", "Struct"]
 
 -- | Initial environment (all empty).
 initialEnv :: Env

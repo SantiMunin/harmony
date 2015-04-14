@@ -35,13 +35,14 @@ generateJSServer = generateOutput (files, templates, fieldMapping)
                 , ("templates/server/js/package.tpl", "json")
                 ]
     fieldMapping AS.TString = "String"
+    fieldMapping AS.TLong = "Number"
     fieldMapping AS.TInt = "Number"
     fieldMapping AS.TDouble = "Number"
     -- An enum is an string with constraints.
     fieldMapping (AS.TEnum _) = "String"
     fieldMapping (AS.TStruct t) = t
     fieldMapping (AS.TList t) = fieldMapping t
-    fieldMapping _ = error "Custom types not implemented yet"
+    fieldMapping other = error $ "Javascript server generation: Type not recognized -> " ++ show other
 
 generateJSClient = error "Javascript client is not implemented yet"
 
@@ -54,10 +55,12 @@ generatePythonClient = generateOutput (files, templates, fieldMapping)
     -- These are the generators for the different types used by Hypothesis.
     fieldMapping AS.TString = "strategy([integers_in_range(32,127)]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
     fieldMapping AS.TInt = "int"
+    fieldMapping AS.TLong = "long"
     fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
+    fieldMapping (AS.TEnum t) = "error: no directly translation from enum type to Hypothesis type"
     fieldMapping (AS.TStruct name) = name ++ "Data"
     fieldMapping (AS.TList t) = fieldMapping t
-    fieldMapping _ = error "Custom types not implemented yet"
+    fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
 
 -- | Uses all the information provided by the user (and the input file) and generates
 -- the output by compiling the templates and copying all the files to the output directory.

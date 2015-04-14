@@ -77,6 +77,7 @@ fieldSpecType :: AS.ApiSpec -- ^ Specification of the service
               -> AS.Type -- ^ 'ApiSpec' field type
 fieldSpecType _ FString = AS.TString
 fieldSpecType _ FInt = AS.TInt
+fieldSpecType _ FLong = AS.TLong
 fieldSpecType _ FDouble = AS.TDouble
 fieldSpecType as (FDefined (Ident name)) = getType as name
   where

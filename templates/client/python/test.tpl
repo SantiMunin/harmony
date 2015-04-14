@@ -54,9 +54,14 @@ Settings.default.timeout = 1
 {{#schema}}
 {{schemaName}}Data = {
 {{#schemaVars}}
+{{#isEnum}}
+  '{{varName}}': {{#isList}}[{{/isList}}one_of([{{#values}}"{{value}}", {{/values}}]){{#isList}}]{{/isList}},
+{{/isEnum}}
+{{^isEnum}}
 {{^isKey}}
   '{{varName}}': {{#isList}}[{{/isList}}{{&varType}}{{#isList}}]{{/isList}}, 
 {{/isKey}}
+{{/isEnum}}
 {{/schemaVars}}
 }
 {{/schema}}
