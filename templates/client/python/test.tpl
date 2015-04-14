@@ -5,6 +5,11 @@ import unittest
 import copy
 import sys
 
+def is_valid_id_string(id_string):
+  return len(id_string) > 0 \
+         and len(id_string) < 20 \
+         and all(map(lambda x: (ord(x) >= 65 and ord(x) <= 90) or (ord(x) >= 97 and ord(x) <= 122), id_string))
+
 class ServiceTest(unittest.TestCase):
 
     def assertEqual(self, item1, item2):
@@ -43,7 +48,7 @@ class ServiceTest(unittest.TestCase):
             item.pop("id", None)
         return item
 
-Settings.default.max_examples = 100
+Settings.default.max_examples = 10000
 Settings.default.timeout = 1
 
 {{#schema}}
@@ -65,6 +70,7 @@ class Test{{schemaName}}(ServiceTest):
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2):
 {{#schemaVars}}
 {{#isKey}}
+    assume(is_valid_id_string(id))
     {{varName}} = id
 {{/isKey}}
 {{^isKey}}

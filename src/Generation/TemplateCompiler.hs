@@ -29,6 +29,7 @@ data SchemaVar = SchemaVar { varName    :: String
                            , isKey      :: Bool
                            , isRequired :: Bool
                            , isHidden   :: Bool
+                           , isUnique   :: Bool
                            } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema is a struct (it has a name, a route, a write mode, etc...).

@@ -116,6 +116,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
                      (names, as { AS.structs = (name, map (readField as) fields):AS.structs as}))
       readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
                                         | map toLower name == "pk" = AS.PrimaryKey
+                                        | map toLower name == "unique" = AS.Unique
                                         | map toLower name == "immutable" = AS.Immutable
                                         | map toLower name == "required" = AS.Required
                                         | otherwise = error $ "Annotation " ++ name ++ " not recognized."

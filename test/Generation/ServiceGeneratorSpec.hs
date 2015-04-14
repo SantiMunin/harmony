@@ -64,7 +64,8 @@ prop_handlesPrimaryKeyCorrectly apiSpec =
       else not $ assertIsKey schemaVar
     assertIsKey schemaVar = any (\s -> TC.hasKeyField s
                                     && TC.keyField s == TC.varName schemaVar
-                                    && schemaVar `elem` TC.schemaVars s ) $ TC.schema result
+                                    && schemaVar `elem` TC.schemaVars s
+                                    && TC.isUnique schemaVar) $ TC.schema result
 
 allVariables :: TC.Service -> [TC.SchemaVar]
 allVariables result = concatMap TC.schemaVars $ TC.schema result

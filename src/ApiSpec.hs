@@ -27,7 +27,8 @@ data Modifier =
     Hidden -- ^ The field will not be returned when read
   | Immutable -- ^ The field cannot be modified
   | Required -- ^ The field can't be absent
-  | PrimaryKey -- ^ The field is the primary key (at most one per struct)
+  | PrimaryKey -- ^ The field is the primary key (thus 'Unique' as well)
+  | Unique -- ^ The field can't have repeated values throughout the collection
   deriving (Eq, Ord, Show)
 
 derive makeArbitrary ''Modifier
