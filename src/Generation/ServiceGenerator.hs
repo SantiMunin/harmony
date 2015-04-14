@@ -14,7 +14,7 @@ generateService :: AS.ApiSpec -- ^ The specification of the web service
 generateService apiSpec fieldMapping =
   TC.Service (AS.name apiSpec)
              (AS.version apiSpec)
-             $ map (generateSchema fieldMapping apiSpec) (map fst $ AS.structs apiSpec)
+             $ map (generateSchema fieldMapping apiSpec . fst) $ AS.structs apiSpec
 
 -- | Generates the information of a resource/struct.
 generateSchema :: (AS.Type -> String) -- ^ A mapping from internal types to target's types

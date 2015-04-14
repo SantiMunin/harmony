@@ -39,7 +39,7 @@ deleteNode v graph = graph { nodes = v `S.delete` nodes graph
     rmFromAllSets v = M.map (S.delete v)
 
 addAllNodes :: Ord a => [a] -> Graph a -> Graph a
-addAllNodes nodes graph = foldl (\g n -> addNode n g) graph nodes
+addAllNodes nodes graph = foldl (flip addNode) graph nodes
 
 addNeighbors :: Ord a => a -> [a] -> Graph a -> Graph a
 addNeighbors v neighboors graph | graph `contains` v = graph { nodes = nodes $ addAllNodes neighboors graph, next = M.insert v (S.fromList neighboors) $ next graph }
