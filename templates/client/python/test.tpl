@@ -1,5 +1,6 @@
 from client import *
 from hypothesis import *
+from hypothesis.searchstrategy.collections import *
 from hypothesis.specifiers import * 
 import unittest
 import copy
@@ -49,17 +50,17 @@ class ServiceTest(unittest.TestCase):
         return item
 
 Settings.default.max_examples = 10000
-Settings.default.timeout = 5
+Settings.default.timeout = 1
 
 {{#schema}}
 {{schemaName}}Data = {
 {{#schemaVars}}
 {{#isEnum}}
-  '{{varName}}': sampled_from([{{#values}}"{{value}}", {{/values}}]),
+  '{{varName}}': {{#isList}}[{{/isList}}sampled_from([{{#values}}"{{value}}", {{/values}}]){{#isList}}]{{/isList}},
 {{/isEnum}}
 {{^isEnum}}
 {{^isKey}}
-  '{{varName}}': {{&varType}}, 
+  '{{varName}}': {{#isList}}ListStrategy([strategy({{/isList}}{{&varType}}{{#isList}})], 5){{/isList}}, 
 {{/isKey}}
 {{/isEnum}}
 {{/schemaVars}}
