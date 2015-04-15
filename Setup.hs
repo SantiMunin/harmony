@@ -7,11 +7,11 @@ import System.Process (system)
 import System.Exit (ExitCode (..))
 import System.Environment (getArgs)
 
-main = defaultMainWithHooks $ simpleUserHooks { preBuild = makeBnfc }
+main = defaultMainWithHooks $ simpleUserHooks { preConf = makeBnfc }
 
 -- Execute bnfc to compile the language specification (see language-spec/Language.cf) before 
 -- compiling.  
-makeBnfc :: Args -> BuildFlags -> IO HookedBuildInfo
+makeBnfc :: Args -> ConfigFlags -> IO HookedBuildInfo
 makeBnfc _ _ = do 
   bnfcOutput <- system "./make_bnfc.sh"
   case bnfcOutput of

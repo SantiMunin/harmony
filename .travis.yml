@@ -1,0 +1,21 @@
+language: haskell
+
+ghc: 7.8
+
+services:
+  - mongodb
+
+sudo: required
+
+before_install: 
+  - cabal install alex
+  - cabal install happy
+  - cabal install bnfc
+  - sudo pip install hypothesis
+  - sudo pip install requests
+  - npm install -g npm-cache
+
+script:
+  - cabal configure --enable-tests && cabal build && cabal test
+  - sh tests.sh
+
