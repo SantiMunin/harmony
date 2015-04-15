@@ -51,6 +51,7 @@ class ServiceTest(unittest.TestCase):
 
 Settings.default.max_examples = 10000
 Settings.default.timeout = 1
+Settings.default.average_list_length = 3
 
 {{#schema}}
 {{schemaName}}Data = {
@@ -60,7 +61,7 @@ Settings.default.timeout = 1
 {{/isEnum}}
 {{^isEnum}}
 {{^isKey}}
-  '{{varName}}': {{#isList}}ListStrategy([strategy({{/isList}}{{&varType}}{{#isList}})], 5){{/isList}}, 
+  '{{varName}}': {{&varType}}, 
 {{/isKey}}
 {{/isEnum}}
 {{/schemaVars}}

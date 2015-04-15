@@ -57,9 +57,9 @@ generatePythonClient = generateOutput (files, templates, fieldMapping)
     fieldMapping AS.TInt = "integers_in_range(-1000,1000)"
     fieldMapping AS.TLong = "long"
     fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
-    fieldMapping (AS.TEnum__) = "error: no directly translation from enum type to Hypothesis type"
+    fieldMapping (AS.TEnum _) = "error: no directly translation from enum type to Hypothesis type"
     fieldMapping (AS.TStruct name) = name ++ "Data"
-    fieldMapping (AS.TList t) = fieldMapping t
+    fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
 
 -- | Uses all the information provided by the user (and the input file) and generates
