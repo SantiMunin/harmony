@@ -15,7 +15,7 @@ checkGood() {
   printf "%s" "Installing node.js dependencies..."
   cd harmony_output/server/js
   npm-cache install 
-  exitWithMessageIfFailure $? "There was a problem while executing npm-cach install"
+  exitWithMessageIfFailure $? "There was a problem while executing npm-cache install"
   cd ../../..
   echo "Executing server in background"
   node harmony_output/server/js/server.js $PORT $MONGO_ADD &
