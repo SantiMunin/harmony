@@ -1,0 +1,7 @@
+service_name: Tasks
+service_version: 1.0.0
+
+struct Person { name : String, age: Int , tasks : [Task]}
+struct Task { name : String, description: String}
+
+resource Person("/person")

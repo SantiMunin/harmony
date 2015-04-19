@@ -3,8 +3,7 @@
 module LangUtils where
 
 import qualified ApiSpec      as AS
-import qualified Data.Map     as M
-import           Data.Maybe
+import qualified Data.Set     as S
 import           Language.Abs
 
 -- | Extracts the name of the 'Specification' (AST).
@@ -72,17 +71,15 @@ fieldType :: Field -- ^ Field information
 fieldType (FDef _ _ ft) = ft
 
 -- | Extracts the type (defined in 'ApiSpec') of a field.
-fieldSpecType :: AS.ApiSpec -- ^ Specification of the service
+fieldSpecType :: (S.Set String, S.Set String) -- ^ (Struct names, Enum names)
               -> FType -- ^ Field type
               -> AS.Type -- ^ 'ApiSpec' field type
 fieldSpecType _ FString = AS.TString
 fieldSpecType _ FInt = AS.TInt
 fieldSpecType _ FLong = AS.TLong
 fieldSpecType _ FDouble = AS.TDouble
-fieldSpecType as (FDefined (Ident name)) = getType as name
-  where
-    getType env t | t `M.member` AS.enums env = AS.TEnum t
-                  | isJust $ lookup t $ AS.structs env = AS.TStruct t
-                  | otherwise = error $ "getType: " ++ t ++ " is not defined."
+fieldSpecType (strs, enums) (FDefined (Ident n)) | n `S.member` enums = AS.TEnum n
+                                                 | n `S.member` strs = AS.TStruct n
+                                                 | otherwise = error $ "getType: " ++ n ++ " is not defined."
 fieldSpecType as (FList type') = AS.TList $ fieldSpecType as type'
 

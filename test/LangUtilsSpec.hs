@@ -1,7 +1,7 @@
 module LangUtilsSpec where
 
 import qualified ApiSpec         as AS
-import qualified Data.Map        as M
+import qualified Data.Set        as S
 import           Language.Abs
 import           LangUtils
 import           Test.Hspec
@@ -65,36 +65,28 @@ spec =
 
     context "fieldSpecType" $ do
       it "returns ApiSpec.AS.TString from Language.Abs.TString" $
-        fieldSpecType mockApiSpec FString `shouldBe` AS.TString
+        fieldSpecType mockEnv FString `shouldBe` AS.TString
 
       it "returns ApiSpec.AS.TInt from Language.Abs.TInt" $
-        fieldSpecType mockApiSpec FInt `shouldBe` AS.TInt
+        fieldSpecType mockEnv FInt `shouldBe` AS.TInt
 
       it "returns ApiSpec.AS.AS.TDouble from Language.Abs.TDouble" $
-        fieldSpecType mockApiSpec FDouble `shouldBe` AS.TDouble
+        fieldSpecType mockEnv FDouble `shouldBe` AS.TDouble
 
       it "returns ApiSpec.AS.TEnum from a user defined enum" $
-        fieldSpecType mockApiSpec (FDefined (Ident "AnEnum")) `shouldBe` AS.TEnum "AnEnum"
+        fieldSpecType mockEnv (FDefined (Ident "AnEnum")) `shouldBe` AS.TEnum "AnEnum"
 
       it "returns ApiSpec.AS.TStruct from a user defined struct" $
-        fieldSpecType mockApiSpec (FDefined (Ident "AStr")) `shouldBe` AS.TStruct "AStr"
+        fieldSpecType mockEnv (FDefined (Ident "AStr")) `shouldBe` AS.TStruct "AStr"
 
       it "returns (ApiSpec.AS.TList (ApiSpec AS.TString)) from a FList FString" $
-        fieldSpecType mockApiSpec (FList FString) `shouldBe` AS.TList AS.TString
+        fieldSpecType mockEnv (FList FString) `shouldBe` AS.TList AS.TString
 
       it "returns (ApiSpec.AS.TList (ApiSpec AS.TEnum)) from a list of user defined enum" $
-        fieldSpecType mockApiSpec (FList (FDefined (Ident "AnEnum"))) `shouldBe` AS.TList (AS.TEnum "AnEnum")
+        fieldSpecType mockEnv (FList (FDefined (Ident "AnEnum"))) `shouldBe` AS.TList (AS.TEnum "AnEnum")
 
   where
-    mockApiSpec = AS.AS { AS.name = "name"
-                        , AS.version = "version"
-                        , AS.enums = M.insert "AnEnum" mockEnumInfo M.empty
-                        , AS.structs = [("AStr", mockStructInfo)]
-                        , AS.resources = M.empty
-                     }
-    mockEnumInfo = []
-    mockStructInfo = []
-
+    mockEnv = (S.fromList ["AStr"], S.fromList ["AnEnum"])
 
 main :: IO ()
 main = hspec spec

@@ -2,6 +2,7 @@
 module StaticCheck (staticCheck) where
 
 import qualified ApiSpec             as AS
+import           Control.Arrow
 import           Control.Monad.State as CMS
 import           Data.Char
 import qualified Data.DiGraph        as DG
@@ -25,13 +26,13 @@ reservedWords = ["Long", "Int", "String", "Resource", "Enum", "Struct"]
 
 -- | Initial environment (all empty).
 initialEnv :: Env
-initialEnv = (S.empty,
+initialEnv = (S.empty, -- ^ Struct names
               AS.AS { AS.name = ""
                     , AS.version = ""
                     , AS.enums = M.empty
                     , AS.structs = []
                     , AS.resources = M.empty
-                    }
+                    } -- ^ Api info
              )
 
 -- | Checks the definition for:
@@ -44,12 +45,15 @@ staticCheck spec@(Spec _ _ enums structs resources) = do
   return $ snd s
   where
     checkSeq = do
-      CMS.modify (\(n, s) -> (n, s { AS.name = specName spec, AS.version = specVersion spec }))
-      let customTypeNames = getEnumNames enums ++ getStructNames structs
+      CMS.modify (\(strs, s) -> (strs, s { AS.name = specName spec, AS.version = specVersion spec }))
+      let enumNames = getEnumNames enums
+          structNames = getStructNames structs
+          customTypeNames = enumNames ++ structNames
       checkClashes $ customTypeNames ++ reservedWords
 
-      CMS.modify (\(_, as) -> (S.fromList customTypeNames, as))
+      CMS.modify (\(_, as) -> (S.fromList structNames, as))
       readAndCheckEnums enums
+      addStructNames structs
       readAndCheckStructs structs
       checkResources resources
       sortStructsByDependencyOrder
@@ -58,13 +62,12 @@ staticCheck spec@(Spec _ _ enums structs resources) = do
 -- Note that it skips resources as those need to have the same name as some struct.
 checkClashes :: [String] -> StaticCheck ()
 checkClashes names =
-  let duplicates = findDuplicates names in
-    case duplicates of
-       Nothing -> return ()
-       Just name ->
-           fail $ "Name clash in declaration: "
-               ++ name
-               ++ " is declared more than once (or it is a reserved word)."
+  case findDuplicates names of
+    Nothing -> return ()
+    Just name ->
+      fail $ "Name clash in declaration: "
+          ++ name
+          ++ " is declared more than once (or it is a reserved word)."
 
 -- | Reads all enums, making sure there are not repeated values.
 readAndCheckEnums :: [EnumType] -> StaticCheck ()
@@ -76,8 +79,14 @@ readAndCheckEnums es = F.forM_ es checkEnumValues >> F.forM_ es readEnum
         unless (isNothing duplicates) (fail $ "Enum value defined more than once " ++ fromJust duplicates)
     readEnum :: EnumType -> StaticCheck ()
     readEnum (DefEnum (Ident name) vals) =
-      CMS.modify (\(names, as) ->
-                     (names, as { AS.enums = M.insert name (map enumValName vals) (AS.enums as)}))
+      CMS.modify (\(structNames, as) ->
+                     (structNames, as { AS.enums = M.insert name (map enumValName vals) (AS.enums as)}))
+
+-- | Adds struct names (without information). Useful to check if a field is valid even if the type is a struct defined afterwards.
+addStructNames :: [StructType] -> StaticCheck ()
+addStructNames strs = F.forM_ strs add
+  where
+    add (DefStr (Ident strName) _) = CMS.modify (first (S.insert strName))
 
 -- | Makes sure all the types used in the struct definitions are valid.
 readAndCheckStructs :: [StructType] -> StaticCheck ()
@@ -85,7 +94,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
       structOk (DefStr (Ident strName) fields) = do
-        names <- CMS.gets fst
+        names <- getAllNamesFromEnv
         checkAttributeClashes fields (names `S.union` S.fromList reservedWords)
         F.forM_ fields fieldOk
         checkHasPk strName fields
@@ -100,7 +109,7 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
 
       fieldOk :: Field -> StaticCheck ()
       fieldOk (FDef _ _ (FDefined (Ident name))) = do
-        knownTypes <- CMS.gets fst
+        knownTypes <- getAllNamesFromEnv
         unless (name `S.member` knownTypes)
                (fail $ "The type (" ++ name ++ ") was not defined.")
       fieldOk _ = return ()
@@ -111,16 +120,29 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
                (fail $ strName ++ " Primary Key annotation (@PK) is used more than once")
 
       readStruct :: StructType -> StaticCheck ()
-      readStruct (DefStr (Ident name) fields) =
-        CMS.modify (\(names, as) ->
-                     (names, as { AS.structs = (name, map (readField as) fields):AS.structs as}))
+      readStruct (DefStr (Ident name) fields) = do
+        enums <- getEnumNamesFromEnv
+        CMS.modify (\(strs, as) ->
+                     (strs, as { AS.structs = (name, map (readField (strs, enums)) fields):AS.structs as}))
       readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
                                         | map toLower name == "pk" = AS.PrimaryKey
                                         | map toLower name == "unique" = AS.Unique
                                         | map toLower name == "immutable" = AS.Immutable
                                         | map toLower name == "required" = AS.Required
                                         | otherwise = error $ "Annotation " ++ name ++ " not recognized."
-      readField as (FDef anns (Ident n) ft) = AS.FI (n, fieldSpecType as ft, S.fromList $ map readAnnotation anns)
+      readField envInfo (FDef anns (Ident n) ft) = AS.FI (n, fieldSpecType envInfo ft, S.fromList $ map readAnnotation anns)
+
+-- | Gets enum names from the environment.
+getEnumNamesFromEnv :: StaticCheck (S.Set String)
+getEnumNamesFromEnv = do
+  as <- CMS.gets snd
+  return $ S.fromList (map fst $ M.toList $ AS.enums as)
+
+-- | Gets the names (identifiers) of all structs and enums (form the environment).
+getAllNamesFromEnv :: StaticCheck (S.Set String)
+getAllNamesFromEnv = do
+  (strNames, as) <- CMS.get
+  return $ strNames `S.union` S.fromList (map fst $ M.toList $ AS.enums as)
 
 checkResources :: [Resource] -> StaticCheck ()
 checkResources ress = do
