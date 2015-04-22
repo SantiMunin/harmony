@@ -1,7 +1,7 @@
 service_name: Vehicule
 service_version: 1.0.0
 
-enum VehiculeType { CAR, BIKE, SPACESHIP}
+enum VehiculeType { CAR, BIKE, SPACESHIP }
 
 struct Vehicule {
   brand : String,
