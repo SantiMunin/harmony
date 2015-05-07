@@ -3,6 +3,7 @@ module StaticCheck (staticCheck) where
 
 import qualified ApiSpec             as AS
 import           Control.Arrow
+import           Control.Monad
 import           Control.Monad.State as CMS
 import           Data.Char
 import qualified Data.DiGraph        as DG
@@ -15,7 +16,9 @@ import           Language.ErrM
 import           LangUtils
 
 
-type Env = (S.Set String, AS.ApiSpec)
+type Env = ( S.Set String -- ^ All the struct names
+           , AS.ApiSpec -- ^ API info
+           )
 
 type StaticCheck a = StateT Env Err a
 
@@ -26,13 +29,14 @@ reservedWords = ["Long", "Int", "String", "Resource", "Enum", "Struct"]
 
 -- | Initial environment (all empty).
 initialEnv :: Env
-initialEnv = (S.empty, -- ^ Struct names
+initialEnv = (S.empty,
               AS.AS { AS.name = ""
                     , AS.version = ""
+                    , AS.requiresAuth = False
                     , AS.enums = M.empty
                     , AS.structs = []
                     , AS.resources = M.empty
-                    } -- ^ Api info
+                    }
              )
 
 -- | Checks the definition for:
@@ -40,9 +44,9 @@ initialEnv = (S.empty, -- ^ Struct names
 --   * Undefined types
 -- and returns a better representation of the api spec.
 staticCheck :: Specification -> Err AS.ApiSpec
-staticCheck spec@(Spec _ _ enums structs resources) = do
-  (_, s) <- runStateT checkSeq initialEnv
-  return $ snd s
+staticCheck spec@(Spec _ _ modules enums structs resources) = do
+  (_, (_, apiSpec)) <- runStateT checkSeq initialEnv
+  return apiSpec
   where
     checkSeq = do
       CMS.modify (\(strs, s) -> (strs, s { AS.name = specName spec, AS.version = specVersion spec }))
@@ -54,6 +58,7 @@ staticCheck spec@(Spec _ _ enums structs resources) = do
       CMS.modify (\(_, as) -> (S.fromList structNames, as))
       readAndCheckEnums enums
       addStructNames structs
+      processModules modules
       readAndCheckStructs structs
       checkResources resources
       sortStructsByDependencyOrder
@@ -84,9 +89,18 @@ readAndCheckEnums es = F.forM_ es checkEnumValues >> F.forM_ es readEnum
 
 -- | Adds struct names (without information). Useful to check if a field is valid even if the type is a struct defined afterwards.
 addStructNames :: [StructType] -> StaticCheck ()
-addStructNames strs = F.forM_ strs add
+addStructNames strs = F.forM_ strs addStr
   where
-    add (DefStr (Ident strName) _) = CMS.modify (first (S.insert strName))
+    addStr (DefStr (Ident strName) _) = CMS.modify $ Control.Arrow.first (S.insert strName)
+
+-- | Modifies the environment with the given modules
+processModules :: Modules -> StaticCheck ()
+processModules EmptyMods = return ()
+processModules (Mods moduleDefs) = void (F.forM_ moduleDefs processModule)
+  where
+    processModule :: Ident -> StaticCheck ()
+    processModule (Ident m) | map toLower m == "authentication"  = CMS.modify (\(structNames, as) -> (structNames, as { AS.requiresAuth = True }))
+                            | otherwise = fail $ "Error processing module: " ++ show m ++ " is not supported."
 
 -- | Makes sure all the types used in the struct definitions are valid.
 readAndCheckStructs :: [StructType] -> StaticCheck ()

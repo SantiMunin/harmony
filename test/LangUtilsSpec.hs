@@ -13,11 +13,11 @@ spec =
   describe "LangUtilsSpec" $ do
     context "specName" $
       it "returns the spec name" $ property $
-        \spec@(Spec (Nm (Ident name)) _ _ _ _) -> specName spec == name
+        \spec@(Spec (Nm (Ident name)) _ _ _ _ _) -> specName spec == name
 
     context "specVersion" $
       it "returns the spec version" $ property $
-        \spec@(Spec _ (Ver (VerIdent version)) _ _ _) -> specVersion spec == version
+        \spec@(Spec _ (Ver (VerIdent version)) _ _ _ _) -> specVersion spec == version
 
     context "enumName" $
       it "returns the name of the enum" $ property $

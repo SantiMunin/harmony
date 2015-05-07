@@ -1,0 +1,12 @@
+service_name: AuthenticationExample
+service_version: 1.0.0
+
+require modules [ Authentication ]
+
+struct Message {
+  author: String,
+  content: String
+}
+
+resource Message ("/message")
+

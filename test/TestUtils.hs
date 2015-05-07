@@ -23,6 +23,7 @@ derive makeArbitrary ''RouteIdent
 derive makeArbitrary ''Name
 derive makeArbitrary ''Version
 derive makeArbitrary ''VerIdent
+derive makeArbitrary ''Modules
 derive makeArbitrary ''Specification
 derive makeArbitrary ''EnumType
 derive makeArbitrary ''EnumVal

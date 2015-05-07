@@ -1,10 +1,12 @@
 comment "//" ;
 comment "/*" "*/" ;
 
-Spec.         Specification ::= Name Version [EnumType] [StructType] [Resource]; 
+Spec.         Specification ::= Name Version Modules [EnumType] [StructType] [Resource]; 
 
 Nm.           Name          ::= "service_name" ":" Ident;
 Ver.          Version       ::= "service_version" ":" VerIdent;
+EmptyMods.    Modules       ::= ;
+Mods.         Modules       ::= "require" "modules" "[" [Ident] "]";
 DefEnum.      EnumType      ::= "enum" Ident "{" [EnumVal] "}";
 DefStr.       StructType    ::= "struct" Ident "{" [Field] "}";
 Res.          Resource      ::= "resource" Ident "(" "\"" RouteIdent "\"" ")" Mode; 
@@ -21,13 +23,13 @@ FList.        FType         ::= "[" FType "]";
 Ann.          Annotation    ::= "@" Ident;
 EnVal.        EnumVal       ::= Ident;
 
-
 separator EnumType "";
 separator nonempty Field ",";
 separator nonempty StructType "";
 separator nonempty Resource "";
 separator nonempty EnumVal ",";
 separator Annotation "";
+separator nonempty Ident "";
 
 token VerIdent digit+ ('.' digit+)* ;
 token RouteIdent '/' letter+ ;

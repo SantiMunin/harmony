@@ -70,11 +70,12 @@ type Resources = M.Map Id ResourceInfo
 type Writable = Bool
 
 -- | The spec of an api is a set of enums and structs, along with the resources.
-data ApiSpec = AS { name      :: String -- ^ Name of the service
-                  , version   :: String -- ^ Version of the service
-                  , enums     :: Enums -- ^ Information about the user defined enums
-                  , structs   :: Structs -- ^ Information about the user defined structs
-                  , resources :: Resources -- ^ Information about the resources defined
+data ApiSpec = AS { name         :: String -- ^ Name of the service
+                  , version      :: String -- ^ Version of the service
+                  , requiresAuth :: Bool -- ^ Whether it should support authentication or not
+                  , enums        :: Enums -- ^ Information about the user defined enums
+                  , structs      :: Structs -- ^ Information about the user defined structs
+                  , resources    :: Resources -- ^ Information about the resources defined
                   }
 
 derive makeShow ''ApiSpec
@@ -173,6 +174,7 @@ instance (Arbitrary ApiSpec) where
     resources' <- mapM (createResource . fst) structs'
     return AS { name = name'
               , version = version'
+              , requiresAuth = False
               , enums = M.fromList enums'
               , structs = structs'
               , resources = M.fromList resources'

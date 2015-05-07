@@ -71,8 +71,8 @@ Settings.default.average_list_length = 3
 {{#schema}}
 {{#schemaRoute}}
 class Test{{schemaName}}(ServiceTest):
-  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data)
-  def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2):
+  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
+  def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#schemaVars}}
 {{#isKey}}
     assume(is_valid_id_string(id))
@@ -82,18 +82,25 @@ class Test{{schemaName}}(ServiceTest):
     {{varName}} = data["{{varName}}"]
 {{/isKey}}
 {{/schemaVars}}
+{{#requiresAuth}}
+    assume(is_valid_id_string(userData))
+    registerResponse = register(url, userData, userData)
+    authResponse = login(url, userData, userData)
+    token = json.loads(authResponse.text)['token']
+{{/requiresAuth}}
 {{#hasKeyField}}
-    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
+
+    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(200, putResponse.status_code)
 {{/hasKeyField}}
 {{^hasKeyField}}
-    postResponse = post{{schemaName}}(url, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
+    postResponse = post{{schemaName}}(url, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(201, postResponse.status_code)
     id = json.loads(postResponse.text)["id"]
 {{/hasKeyField}}
 {{#schemaVars}}
 {{^isKey}}
-    self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id).text).get_{{varName}}())
+    self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id{{#requiresAuth}},token{{/requiresAuth}}).text).get_{{varName}}())
 {{/isKey}}
 {{/schemaVars}}
 
@@ -106,22 +113,34 @@ class Test{{schemaName}}(ServiceTest):
 {{/isKey}}
 {{/schemaVars}}
 
-    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}))
+    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(200, putResponse.status_code)
 {{#schemaVars}}
 {{^isKey}}
-    self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id).text).get_{{varName}}())
+    self.assertEqual({{varName}}, {{schemaName}}.fromJSON(get{{schemaName}}(url, id{{#requiresAuth}},token{{/requiresAuth}}).text).get_{{varName}}())
 {{/isKey}}
 {{/schemaVars}}
 
-    deleteResponse = delete{{schemaName}}(url, id)
+    deleteResponse = delete{{schemaName}}(url, id{{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(200, deleteResponse.status_code)
 
-    getAfterDeleteResponse = get{{schemaName}}(url, id)
+    getAfterDeleteResponse = get{{schemaName}}(url, id{{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(404, getAfterDeleteResponse.status_code)
 
 {{/schemaRoute}}
 {{/schema}}
+
+{{#requiresAuth}}
+class LoginTest(ServiceTest):
+  @given(strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
+  def login_test(self, userData):
+    register = register(url, userData, userData)
+    correctLoginResponse = login(url, userData, userData)
+    assertEqual(200, correctLoginResponse.status_code)
+    assertTrue(len(json.loads(correctLoginResponse.text)['token']) > 0)
+    incorrectLoginResponse = login(url, userData, userData + "XYZ")
+    assertEqual(401, incorrectLoginResponse.status_code)
+{{/requiresAuth}}
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

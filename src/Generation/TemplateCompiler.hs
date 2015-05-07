@@ -41,9 +41,10 @@ data Schema = Schema { schemaName  :: String
                      , schemaVars  :: [SchemaVar] } deriving (Show, Data, Typeable)
 
 -- | A service has a name, a version, and a list of 'Schema'
-data Service = Service { name    :: String
-                       , version :: String
-                       , schema  :: [Schema] } deriving (Show, Data, Typeable)
+data Service = Service { name         :: String
+                       , version      :: String
+                       , requiresAuth :: Bool
+                       , schema       :: [Schema] } deriving (Show, Data, Typeable)
 
 -- | Given a template and a service object, render the template.
 render:: String -> Service -> IO TL.Text

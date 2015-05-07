@@ -9,12 +9,12 @@ import           Language.Abs
 -- | Extracts the name of the 'Specification' (AST).
 specName :: Specification -- ^ Specification returned by the parser
          -> String -- ^ Name of the specification
-specName (Spec (Nm (Ident n)) _ _ _ _) = n
+specName (Spec (Nm (Ident n)) _ _ _ _ _) = n
 
 -- | Extracts the version of the 'Specification' (AST).
 specVersion :: Specification -- ^ Specification returned by the parser
             -> String -- ^ Version of the specification
-specVersion (Spec _(Ver (VerIdent v)) _ _ _) = v
+specVersion (Spec _(Ver (VerIdent v)) _ _ _ _) = v
 
 -- | Extracts the name of an enum.
 enumName :: EnumType -- ^ Enum information

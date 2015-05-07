@@ -42,30 +42,38 @@ class {{schemaName}}:
 {{/schemaVars}}
 {{/schema}}
 
+{{#requiresAuth}}
+def login(url, login, password):
+  return requests.post(url + "/u_auth" + "/" + login + "/" + password)
+
+def register(url , login, password):
+  return requests.post(url + "/u_auth/register", data=json.dumps({'login' : login, 'password': password}), headers = {'content-type': 'application/json'})
+{{/requiresAuth}}
+
 {{#schema}}{{#schemaRoute}}
 
-def get{{schemaName}}_list(url):
-    return requests.get(url + "{{&value}}")
+def get{{schemaName}}_list(url{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.get(url + "{{&value}}"{{#requiresAuth}}+ "/" + token{{/requiresAuth}})
 
-def get{{schemaName}}(url, item_id):
-    return requests.get(url + "{{&value}}" + "/" + item_id)
+def get{{schemaName}}(url, item_id{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.get(url + "{{&value}}" + "/" + item_id{{#requiresAuth}}+ "/" + token{{/requiresAuth}})
 {{#writable}}
 
 {{#hasKeyField}}
 
-def put{{schemaName}}(url, item):
-    return requests.put(url + "{{&value}}" + "/" + item.get_{{keyField}}(), data=item.toJSON(), headers = {'content-type': 'application/json'})
+def put{{schemaName}}(url, item{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.put(url + "{{&value}}" + "/" + item.get_{{keyField}}(){{#requiresAuth}}+ "/" + token{{/requiresAuth}}, data=item.toJSON(), headers = {'content-type': 'application/json'})
 {{/hasKeyField}}
 
-def put{{schemaName}}(url, item_id, item):
-    return requests.put(url + "{{&value}}" + "/" + item_id, data=item.toJSON(), headers = {'content-type': 'application/json'})
+def put{{schemaName}}(url, item_id, item{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.put(url + "{{&value}}" + "/" + item_id{{#requiresAuth}}+ "/" + token{{/requiresAuth}}, data=item.toJSON(), headers = {'content-type': 'application/json'})
 {{^hasKeyField}}
 
-def post{{schemaName}}(url, item):
-    return requests.post(url + "{{&value}}", data=item.toJSON(), headers = {'content-type': 'application/json'})
+def post{{schemaName}}(url, item{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.post(url + "{{&value}}"{{#requiresAuth}}+ "/" + token{{/requiresAuth}}, data=item.toJSON(), headers = {'content-type': 'application/json'})
 {{/hasKeyField}}
 
-def delete{{schemaName}}(url, item_id):
-    return requests.delete(url + "{{&value}}" + "/" + item_id)
+def delete{{schemaName}}(url, item_id{{#requiresAuth}}, token{{/requiresAuth}}):
+    return requests.delete(url + "{{&value}}" + "/" + item_id{{#requiresAuth}}+ "/" + token{{/requiresAuth}})
 {{/writable}}
 {{/schemaRoute}}{{/schema}}
