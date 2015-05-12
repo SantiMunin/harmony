@@ -1,0 +1,13 @@
+service_name: UserPosts
+service_version: 1.1.2
+
+require modules [ Authentication ]
+
+struct UserPost {
+  @PK
+  @UserLogin
+  author: String,
+  message: String
+}
+
+resource UserPost ("/post")

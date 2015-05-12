@@ -50,7 +50,7 @@ class ServiceTest(unittest.TestCase):
         return item
 
 Settings.default.max_examples = 10000
-Settings.default.timeout = 1
+Settings.default.timeout = 3
 Settings.default.average_list_length = 3
 
 {{#schema}}
@@ -75,7 +75,13 @@ class Test{{schemaName}}(ServiceTest):
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#schemaVars}}
 {{#isUserLogin}}
+{{#isKey}}
+    assume(is_valid_id_string(userData))
+    id = userData
+{{/isKey}}
+{{^isKey}}
     {{varName}} = userData
+{{/isKey}}
 {{/isUserLogin}}
 {{^isUserLogin}}
 {{#isKey}}
@@ -96,11 +102,11 @@ class Test{{schemaName}}(ServiceTest):
 {{/requiresAuth}}
 {{#hasKeyField}}
 
-    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
+    putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{^isUserLogin}}{{varName}} = {{varName}},{{/isUserLogin}} {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(200, putResponse.status_code)
 {{/hasKeyField}}
 {{^hasKeyField}}
-    postResponse = post{{schemaName}}(url, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
+    postResponse = post{{schemaName}}(url, {{schemaName}}({{#schemaVars}}{{^isUserLogin}}{{varName}} = {{varName}},{{/isUserLogin}} {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})
     self.assertEqual(201, postResponse.status_code)
     id = json.loads(postResponse.text)["id"]
 {{/hasKeyField}}

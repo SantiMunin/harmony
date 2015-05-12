@@ -3,7 +3,7 @@ import requests, json
 
 class {{schemaName}}:
 
-    def __init__(self, {{#schemaVars}}{{varName}}, {{/schemaVars}}):
+    def __init__(self, {{#schemaVars}}{{varName}} = None, {{/schemaVars}}):
         self._info = {}
 {{#schemaVars}}
 {{#isStruct}}
