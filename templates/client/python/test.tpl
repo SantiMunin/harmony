@@ -74,6 +74,10 @@ class Test{{schemaName}}(ServiceTest):
   @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#schemaVars}}
+{{#isUserLogin}}
+    {{varName}} = userData
+{{/isUserLogin}}
+{{^isUserLogin}}
 {{#isKey}}
     assume(is_valid_id_string(id))
     {{varName}} = id
@@ -81,11 +85,13 @@ class Test{{schemaName}}(ServiceTest):
 {{^isKey}}
     {{varName}} = data["{{varName}}"]
 {{/isKey}}
+{{/isUserLogin}}
 {{/schemaVars}}
 {{#requiresAuth}}
     assume(is_valid_id_string(userData))
     registerResponse = register(url, userData, userData)
     authResponse = login(url, userData, userData)
+    self.assertEqual(authResponse.status_code, 200);
     token = json.loads(authResponse.text)['token']
 {{/requiresAuth}}
 {{#hasKeyField}}
@@ -105,12 +111,17 @@ class Test{{schemaName}}(ServiceTest):
 {{/schemaVars}}
 
 {{#schemaVars}}
+{{#isUserLogin}}
+    {{varName}} = userData
+{{/isUserLogin}}
+{{^isUserLogin}}
 {{#isKey}}
     {{varName}} = id
 {{/isKey}}
 {{^isKey}}
-    {{varName}} = data2["{{varName}}"]
+    {{varName}} = data["{{varName}}"]
 {{/isKey}}
+{{/isUserLogin}}
 {{/schemaVars}}
 
     putResponse = put{{schemaName}}(url, id, {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}}){{#requiresAuth}},token{{/requiresAuth}})

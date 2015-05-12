@@ -104,7 +104,9 @@ processModules (Mods moduleDefs) = void (F.forM_ moduleDefs processModule)
 
 -- | Makes sure all the types used in the struct definitions are valid.
 readAndCheckStructs :: [StructType] -> StaticCheck ()
-readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
+readAndCheckStructs strs = do
+  F.forM_ strs structOk
+  F.forM_ strs readStruct
     where
       structOk :: StructType -> StaticCheck ()
       structOk (DefStr (Ident strName) fields) = do
@@ -129,22 +131,35 @@ readAndCheckStructs strs = F.forM_ strs structOk >> F.forM_ strs readStruct
       fieldOk _ = return ()
 
       checkHasPk :: String -> [Field] -> StaticCheck ()
-      checkHasPk strName fields =
-        unless (length (filter ((==AS.PrimaryKey) . readAnnotation) $ concatMap fieldAnnotations fields) <= 1)
+      checkHasPk strName fields = do
+        fieldsWithPk <- filterM (\f -> do
+          m <- readAnnotation f
+          return (m==AS.PrimaryKey)) $ concatMap fieldAnnotations fields
+        --unless (length (filter ((==AS.PrimaryKey) . readAnnotation) $ concatMap fieldAnnotations fields) <= 1)
+        unless (length fieldsWithPk <= 1)
                (fail $ strName ++ " Primary Key annotation (@PK) is used more than once")
 
       readStruct :: StructType -> StaticCheck ()
       readStruct (DefStr (Ident name) fields) = do
         enums <- getEnumNamesFromEnv
-        CMS.modify (\(strs, as) ->
-                     (strs, as { AS.structs = (name, map (readField (strs, enums)) fields):AS.structs as}))
-      readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = AS.Hidden
-                                        | map toLower name == "pk" = AS.PrimaryKey
-                                        | map toLower name == "unique" = AS.Unique
-                                        | map toLower name == "immutable" = AS.Immutable
-                                        | map toLower name == "required" = AS.Required
-                                        | otherwise = error $ "Annotation " ++ name ++ " not recognized."
-      readField envInfo (FDef anns (Ident n) ft) = AS.FI (n, fieldSpecType envInfo ft, S.fromList $ map readAnnotation anns)
+        (strs, as) <- CMS.get
+        allFields <- mapM (readField (strs, enums)) fields
+        CMS.put (strs, as { AS.structs = (name, allFields):AS.structs as})
+      readAnnotation :: Annotation -> StaticCheck AS.Modifier
+      readAnnotation (Ann (Ident name)) | map toLower name == "hidden" = return AS.Hidden
+                                        | map toLower name == "pk" = return AS.PrimaryKey
+                                        | map toLower name == "unique" = return AS.Unique
+                                        | map toLower name == "immutable" = return AS.Immutable
+                                        | map toLower name == "required" = return AS.Required
+                                        | map toLower name == "userlogin" = do
+                                          as <- CMS.gets snd
+                                          if AS.requiresAuth as
+                                          then return AS.UserLogin
+                                          else fail "The UserLogin annotation requires the module \"Authentication\""
+                                        | otherwise = fail $ "Annotation " ++ name ++ " not recognized."
+      readField envInfo (FDef anns (Ident n) ft) = do
+        allAnnotations <- mapM readAnnotation anns
+        return $ AS.FI (n, fieldSpecType envInfo ft, S.fromList allAnnotations)
 
 -- | Gets enum names from the environment.
 getEnumNamesFromEnv :: StaticCheck (S.Set String)

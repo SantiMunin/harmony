@@ -29,6 +29,7 @@ data Modifier =
   | Required -- ^ The field can't be absent
   | PrimaryKey -- ^ The field is the primary key (thus 'Unique' as well)
   | Unique -- ^ The field can't have repeated values throughout the collection
+  | UserLogin -- ^ The field value will contain the user's login
   deriving (Eq, Ord, Show)
 
 derive makeArbitrary ''Modifier

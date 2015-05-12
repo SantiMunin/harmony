@@ -58,6 +58,7 @@ generateVars fieldMapping apiSpec = map getVarFromField
                    , TC.isRequired = AS.Required `S.member` modifs
                    , TC.isHidden = AS.Hidden `S.member` modifs
                    , TC.isUnique = AS.Unique `S.member` modifs || AS.PrimaryKey `S.member` modifs
+                   , TC.isUserLogin = AS.UserLogin `S.member` modifs
                    }
         where
           getValues (AS.TEnum enumId) = TC.EnumValue $ map TC.StrValue (fromJust $ M.lookup enumId $ AS.enums apiSpec)
