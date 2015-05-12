@@ -18,7 +18,7 @@ checkGood() {
   exitWithMessageIfFailure $? "There was a problem while executing npm-cache install"
   cd ../../..
   echo "Executing server in background"
-  node harmony_output/server/js/server.js $PORT $MONGO_ADD &
+  node harmony_output/server/js/server.js $PORT $MONGO_ADD > /dev/null &
   NODE_PID=$!
   echo "Server pid: $NODE_PID"
   sleep 5
