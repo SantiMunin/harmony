@@ -31,5 +31,5 @@ separator nonempty EnumVal ",";
 separator Annotation "";
 separator nonempty Ident "";
 
-token VerIdent digit+ ('.' digit+)* ;
-token RouteIdent '/' letter+ ;
+token VerIdent digit '.' digit '.' digit;
+token RouteIdent '/' letter+;
