@@ -142,6 +142,12 @@ app.get('{{&value}}{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res
 });
 
 app.get('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
+  {{^hasKeyField}}
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    res.status(400).send("Invalid id");
+    return;
+  }
+  {{/hasKeyField}}
 {{#requiresAuth}}
   assertSessionCorrect(req.params.token, res, function(userLogin) {
 {{/requiresAuth}}
@@ -188,6 +194,12 @@ req.body.{{varName}} = userLogin;
 {{/hasKeyField}}
 
 app.put('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
+  {{^hasKeyField}}
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    res.status(400).send("Invalid id");
+    return;
+  }
+  {{/hasKeyField}}
 {{#requiresAuth}}
   assertSessionCorrect(req.params.token, res, function(userLogin) {
 {{/requiresAuth}}
@@ -209,6 +221,12 @@ req.body.{{varName}} = userLogin;
 });
 
 app.delete('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
+  {{^hasKeyField}}
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    res.status(400).send("Invalid id");
+    return;
+  }
+  {{/hasKeyField}}
 {{#requiresAuth}}
   assertSessionCorrect(req.params.token, res, function(userLogin) {
 {{/requiresAuth}}
