@@ -144,7 +144,7 @@ app.get('{{&value}}{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res
 app.get('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
   {{^hasKeyField}}
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    res.status(400).send("Invalid id");
+    res.status(404).send();
     return;
   }
   {{/hasKeyField}}
@@ -196,7 +196,7 @@ req.body.{{varName}} = userLogin;
 app.put('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
   {{^hasKeyField}}
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    res.status(400).send("Invalid id");
+    res.status(404).send();
     return;
   }
   {{/hasKeyField}}
@@ -223,7 +223,7 @@ req.body.{{varName}} = userLogin;
 app.delete('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res) {
   {{^hasKeyField}}
   if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    res.status(400).send("Invalid id");
+    res.status(404).send();
     return;
   }
   {{/hasKeyField}}
