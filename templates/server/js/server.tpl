@@ -130,8 +130,11 @@ app.get('{{&value}}{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, res
   assertSessionCorrect(req.params.token, res, function(userLogin) {
 {{/requiresAuth}}
         {{schemaName}}.find(function(err, result) {
-          if (err) return console.log(err);
-            res.send(result);
+          if (err) {
+            res.status(500).send(err);  
+          } else {
+            res.send(result); 
+          }   
          });
 {{#requiresAuth}}
 });
@@ -144,7 +147,7 @@ app.get('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req,
 {{/requiresAuth}}
         {{schemaName}}.find({ {{#hasKeyField}}{{keyField}}{{/hasKeyField}}{{^hasKeyField}}_id{{/hasKeyField}}: req.params.id }, function(err, result) {
           if (err) {
-            console.log(err);
+            res.status(500).send(err);
             return;
             }
           if (result.length == 0) {
@@ -167,7 +170,6 @@ app.post('{{&value}}{{#requiresAuth}}/:token{{/requiresAuth}}', function(req, re
 {{#schemaVars}}
 {{#isUserLogin}}
 req.body.{{varName}} = userLogin;
-console.log("REQ.BODY.{{varName}}" + req.body.{{varName}});
 {{/isUserLogin}}
 {{/schemaVars}}
   {{schemaName}}.create(new {{schemaName}}(req.body), function(err, obj) {
