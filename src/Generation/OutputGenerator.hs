@@ -10,6 +10,13 @@ import qualified Generation.ServiceGenerator as SG
 import qualified Generation.TemplateCompiler as TC
 import           Paths_harmony
 import           System.Directory
+import           System.Exit                 (ExitCode (..))
+import           System.Log.Formatter
+import           System.Log.Handler          (setFormatter)
+import           System.Log.Handler.Simple
+import           System.Log.Handler.Syslog
+import           System.Log.Logger
+import           System.Process              (system)
 
 -- | A template is a source file and a new extension; e.g. ("template.tpl", "js") will result in
 --   "template.js" after the template compilation.
@@ -28,7 +35,7 @@ type GenerationFunction = FilePath -- ^ Output path
 
 -- | Target generation function.
 generateJSServer, generateJSClient, generatePythonClient :: GenerationFunction
-generateJSServer = generateOutput (files, templates, fieldMapping)
+generateJSServer = generateOutput (files, templates, fieldMapping) postOpFunc
   where
     files = []
     templates = [ ("templates/server/js/server.tpl", "js")
@@ -46,7 +53,7 @@ generateJSServer = generateOutput (files, templates, fieldMapping)
 
 generateJSClient = error "Javascript client is not implemented yet"
 
-generatePythonClient = generateOutput (files, templates, fieldMapping)
+generatePythonClient = generateOutput (files, templates, fieldMapping) postOpFunc
   where
     files = []
     templates = [ ("templates/client/python/client.tpl", "py")
@@ -62,15 +69,46 @@ generatePythonClient = generateOutput (files, templates, fieldMapping)
     fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
 
+-- | Applies different post processing operations to each file type.
+postOpFunc :: String -> FilePath -> IO ()
+postOpFunc "js" = applyJsBeautify
+postOpFunc "py" = applyYapf
+postOpFunc _ = \_ -> return ()
+
+applyJsBeautify :: FilePath -> IO ()
+applyJsBeautify path = do
+  infoM "Generation.OutputGenerator" $ "Applying js-beautifier to " ++ path
+  outcome <- system $ "js-beautify " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
+  case outcome of
+    ExitSuccess -> return ()
+    (ExitFailure _) ->
+      warningM "Generation.OutputGenerator" $ "There was a problem applying the python beautifier, "
+              ++ "please check it is installed and in the system's path (if "
+              ++ "you ignore this message the Python generated files will not be properly formatted"
+
+
+applyYapf :: FilePath -> IO ()
+applyYapf path = do
+  infoM "Generation.OutputGenerator" $ "Applying yapf to " ++ path
+  outcome <- system $ "yapf " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
+  case outcome of
+    ExitSuccess -> return ()
+    (ExitFailure _) ->
+      warningM "Generation.OutputGenerator" $ "There was a problem applying the python beautifier, "
+              ++ "please check it is installed and in the system's path (if "
+              ++ "you ignore this message the Python generated files will not be properly formatted"
+
 -- | Uses all the information provided by the user (and the input file) and generates
 -- the output by compiling the templates and copying all the files to the output directory.
 generateOutput :: GenerationInfo -- ^ The information gathered from the user
+               -> (String -> FilePath -> IO ()) -- ^ A function that performs a different operation per file extension
                -> FilePath -- ^ Output path
                -> AS.ApiSpec -- ^ The information gathered from the input file (specification)
                -> IO ()
-generateOutput (files, templates, fieldMapping) outputPath apiSpec = do
+generateOutput (files, templates, fieldMapping) postOpFunc outputPath apiSpec = do
+  updateGlobalLogger "Generation.OutputGenerator" (setLevel INFO)
   forM_ files (copy outputPath)
-  forM_ templates (generateAndWrite outputPath $ SG.generateService apiSpec fieldMapping)
+  forM_ templates (generateAndWrite outputPath (SG.generateService apiSpec fieldMapping) postOpFunc)
 
 -- | Copies a file.
 copy :: FilePath -- ^ Origin file
@@ -83,12 +121,14 @@ copy origin dest = do
 -- | Generate a template and writes it to the destination path.
 generateAndWrite :: FilePath -- ^ Destination path
                 -> TC.Service -- ^ Information for the template
+                -> (String -> FilePath -> IO ()) -- ^ A function that performs a different operation per file extension
                 -> TemplateInfo -- ^ Information of the template
                 -> IO ()
-generateAndWrite dest service (templatePath, newExt)  = do
+generateAndWrite dest service postOpFunc (templatePath, newExt) = do
   output <- TC.render templatePath service
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output
+  postOpFunc newExt destFile
   where
     destFileWithoutExt = dest ++ takeWhile (/= '.') (dropWhile (/= '/') templatePath)
     destDir =
