@@ -74,9 +74,9 @@ generatePythonClient = generateOutput (files, templates, fieldMapping) postOpFun
 generateJavaClient = generateOutput (files, templates, fieldMapping) postOpFunc
   where
     files = [ "templates/client/java/pom.xml"
-            , "templates/client/java/src/main/com/prototype/NetworkClient.java"
+            , "templates/client/java/src/main/java/com/prototype/NetworkClient.java"
             ]
-    templates = [ ("templates/client/java/src/main/com/prototype/ServerClient.tpl", "java") ]
+    templates = [ ("templates/client/java/src/main/java/com/prototype/ServiceClient.tpl", "java") ]
     fieldMapping AS.TString = "String"
     fieldMapping AS.TInt = "int"
     fieldMapping AS.TLong = "long"
@@ -92,6 +92,7 @@ postOpFunc "js" = applyJsBeautify
 postOpFunc "py" = applyYapf
 postOpFunc _ = \_ -> return ()
 
+-- | Applies a beautifier (beautify-js) to generated Javascript code. It does nothing if the tool is not available.
 applyJsBeautify :: FilePath -> IO ()
 applyJsBeautify path = do
   infoM "Generation.OutputGenerator" $ "Applying js-beautifier to " ++ path
@@ -103,7 +104,7 @@ applyJsBeautify path = do
               ++ "please check it is installed and in the system's path (if "
               ++ "you ignore this message the Python generated files will not be properly formatted"
 
-
+-- | Applies a beatufier (yapf) to generated Python code. It does nothing if the tool is not available in the path.
 applyYapf :: FilePath -> IO ()
 applyYapf path = do
   infoM "Generation.OutputGenerator" $ "Applying yapf to " ++ path
@@ -124,7 +125,7 @@ generateOutput :: GenerationInfo -- ^ The information gathered from the user
                -> IO ()
 generateOutput (files, templates, fieldMapping) postOpFunc outputPath apiSpec = do
   updateGlobalLogger "Generation.OutputGenerator" (setLevel INFO)
-  forM_ files (copy outputPath)
+  forM_ files (`copy` outputPath)
   forM_ templates (generateAndWrite outputPath (SG.generateService apiSpec fieldMapping) postOpFunc)
 
 -- | Copies a file.
@@ -132,8 +133,17 @@ copy :: FilePath -- ^ Origin file
      -> FilePath -- ^ Destination path
      -> IO ()
 copy origin dest = do
+  let destFile = (dest ++ dropWhile (/= '/')  origin)
+  let destDir = dirName destFile
+  infoM "Generation.OutputGenerator" $ "Creating " ++ show destFile
   cabalFilePath <- getDataFileName origin
-  copyFile cabalFilePath (dest ++ "/" ++ origin)
+  createDirectoryIfMissing {- create parent dirs too -} True destDir
+  copyFile cabalFilePath destFile
+
+-- | Gets the dir of a file path.
+dirName :: FilePath -> FilePath
+dirName file = let indices = elemIndices '/' file
+               in if null indices then "." else take (last indices + 1) file
 
 -- | Generate a template and writes it to the destination path.
 generateAndWrite :: FilePath -- ^ Destination path
@@ -142,13 +152,12 @@ generateAndWrite :: FilePath -- ^ Destination path
                 -> TemplateInfo -- ^ Information of the template
                 -> IO ()
 generateAndWrite dest service postOpFunc (templatePath, newExt) = do
+  infoM "Generation.OutputGenerator" $ "Creating " ++ show destFile
   output <- TC.render templatePath service
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   TL.writeFile destFile output
   postOpFunc newExt destFile
   where
     destFileWithoutExt = dest ++ takeWhile (/= '.') (dropWhile (/= '/') templatePath)
-    destDir =
-      let indices = elemIndices '/' destFile
-      in if null indices then "." else take (last indices + 1) destFile
+    destDir = dirName dest
     destFile = destFileWithoutExt ++ "." ++ newExt

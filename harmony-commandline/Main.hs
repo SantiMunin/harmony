@@ -43,6 +43,7 @@ options = [ Option "c" ["client"]
 parseClient, parseServer :: Maybe String -> OG.GenerationFunction
 parseClient (Just "js") = OG.generateJSClient
 parseClient (Just "python") = OG.generatePythonClient
+parseClient (Just "java") = OG.generateJavaClient
 parseClient (Just other) = error $ "Could not parse client: " ++ other
 parseClient Nothing = error "parseClient: not expected Nothing as flag"
 parseServer (Just "js") = OG.generateJSServer
