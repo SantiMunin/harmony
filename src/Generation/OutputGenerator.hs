@@ -1,6 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- | Contains the generation logic and functions of the different possible outputs.
-module Generation.OutputGenerator(GenerationFunction, generateJSServer, generateJSClient, generatePythonClient) where
+module Generation.OutputGenerator(
+    GenerationFunction
+  , generateJSServer
+  , generateJSClient
+  , generatePythonClient
+  , generateJavaClient )
+  where
 
 import qualified ApiSpec                     as AS
 import           Control.Monad
@@ -11,10 +17,6 @@ import qualified Generation.TemplateCompiler as TC
 import           Paths_harmony
 import           System.Directory
 import           System.Exit                 (ExitCode (..))
-import           System.Log.Formatter
-import           System.Log.Handler          (setFormatter)
-import           System.Log.Handler.Simple
-import           System.Log.Handler.Syslog
 import           System.Log.Logger
 import           System.Process              (system)
 
@@ -34,7 +36,7 @@ type GenerationFunction = FilePath -- ^ Output path
                        -> IO ()
 
 -- | Target generation function.
-generateJSServer, generateJSClient, generatePythonClient :: GenerationFunction
+generateJSServer, generateJSClient, generatePythonClient, generateJavaClient :: GenerationFunction
 generateJSServer = generateOutput (files, templates, fieldMapping) postOpFunc
   where
     files = []
@@ -68,6 +70,21 @@ generatePythonClient = generateOutput (files, templates, fieldMapping) postOpFun
     fieldMapping (AS.TStruct name) = name ++ "Data"
     fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
+
+generateJavaClient = generateOutput (files, templates, fieldMapping) postOpFunc
+  where
+    files = [ "templates/client/java/pom.xml"
+            , "templates/client/java/src/main/com/prototype/NetworkClient.java"
+            ]
+    templates = [ ("templates/client/java/src/main/com/prototype/ServerClient.tpl", "java") ]
+    fieldMapping AS.TString = "String"
+    fieldMapping AS.TInt = "int"
+    fieldMapping AS.TLong = "long"
+    fieldMapping AS.TDouble = "double"
+    fieldMapping (AS.TEnum enumName) = enumName
+    fieldMapping (AS.TStruct strName) = strName
+    fieldMapping (AS.TList t) = "List<" ++ fieldMapping t ++ ">"
+    fieldMapping other = error $ "Java client generation: Type not recognized -> " ++ show other
 
 -- | Applies different post processing operations to each file type.
 postOpFunc :: String -> FilePath -> IO ()
