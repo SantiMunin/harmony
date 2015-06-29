@@ -10,25 +10,27 @@ import qualified Generation.TemplateCompiler as TC
 -- | Transforms an api specification to a service.
 generateService :: AS.ApiSpec -- ^ The specification of the web service
                 -> (AS.Type -> String) -- ^ A mapping from internal types to target's types
+                -> (AS.Type -> String) -- ^ A mapping from internal types to target's types (boxed version, for Java)
                 -> TC.Service
-generateService apiSpec fieldMapping =
+generateService apiSpec fieldMapping fieldMappingBoxedType =
   TC.Service (AS.name apiSpec)
              (AS.version apiSpec)
              (AS.requiresAuth apiSpec)
-             $ map (generateSchema fieldMapping apiSpec . fst) $ AS.structs apiSpec
+             $ map (generateSchema fieldMapping fieldMappingBoxedType apiSpec . fst) $ AS.structs apiSpec
 
 -- | Generates the information of a resource/struct.
 generateSchema :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
+               -> (AS.Type -> String) -- ^ A mapping from internal types to target's types (boxed version, for Java)
                -> AS.ApiSpec -- ^ The specification of the web service
                -> AS.Id -- ^ The name of the struct
                -> TC.Schema
-generateSchema fieldMapping apiSpec strId =
+generateSchema fieldMapping fieldMappingBoxedType apiSpec strId =
   TC.Schema { TC.schemaName = strId
             , TC.schemaRoute = schemaRoute'
             , TC.writable = writable'
             , TC.hasKeyField = hasKeyField
             , TC.keyField = keyField
-            , TC.schemaVars = generateVars fieldMapping apiSpec structInfo }
+            , TC.schemaVars = generateVars fieldMapping fieldMappingBoxedType apiSpec structInfo }
   where
     (schemaRoute', writable') = maybe (Nothing, False) (\(r, w) -> (Just TC.StrValue { TC.value = r }, w)) (M.lookup strId $ AS.resources apiSpec)
     structInfo = fromJust $ lookup strId $ AS.structs apiSpec
@@ -39,10 +41,11 @@ generateSchema fieldMapping apiSpec strId =
 
 -- | Generates the information of the fields of a 'TC.Schema'.
 generateVars :: (AS.Type -> String) -- ^ A mapping from internal types to target's types
+             -> (AS.Type -> String) -- ^ A mapping from internal types to target's types (boxed version, for Java)
              -> AS.ApiSpec -- ^ The specification of the web service
              -> AS.StructInfo -- ^ The information of the struct
              -> [TC.SchemaVar] -- ^ The information of all the fields of the schema
-generateVars fieldMapping apiSpec = map getVarFromField
+generateVars fieldMapping fieldMappingBoxedType apiSpec = map getVarFromField
   where
     getVarFromField :: AS.FieldInfo -> TC.SchemaVar
     getVarFromField (AS.FI (n, t, modifs)) = generateSchemaVar n t modifs
@@ -51,6 +54,7 @@ generateVars fieldMapping apiSpec = map getVarFromField
     generateSchemaVar name type' modifs =
       TC.SchemaVar { TC.varName = name
                    , TC.varType = fieldMapping type'
+                   , TC.varBoxedType = fieldMappingBoxedType type'
                    , TC.isList = isList type'
                    , TC.isEnum = if isEnum type' then Just $ getValues type' else Nothing
                    , TC.isStruct = isStruct type'

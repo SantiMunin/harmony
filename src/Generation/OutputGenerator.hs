@@ -28,7 +28,8 @@ type TemplateInfo = (FilePath, String)
 --   * List of regular files (this will be just directly copied)
 --   * List of templates that will be compiled
 --   * A map from a Harmony type to the target's type
-type GenerationInfo = ([FilePath], [TemplateInfo], AS.Type -> String)
+--   * A map from a Harmony type to the target's type (boxed, for Java)
+type GenerationInfo = ([FilePath], [TemplateInfo], AS.Type -> String, AS.Type -> String)
 
 -- | A function that generates the target.
 type GenerationFunction = FilePath -- ^ Output path
@@ -37,7 +38,7 @@ type GenerationFunction = FilePath -- ^ Output path
 
 -- | Target generation function.
 generateJSServer, generateJSClient, generatePythonClient, generateJavaClient :: GenerationFunction
-generateJSServer = generateOutput (files, templates, fieldMapping) postOpFunc
+generateJSServer = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
     files = []
     templates = [ ("templates/server/js/server.tpl", "js")
@@ -52,10 +53,11 @@ generateJSServer = generateOutput (files, templates, fieldMapping) postOpFunc
     fieldMapping (AS.TStruct t) = t
     fieldMapping (AS.TList t) = fieldMapping t
     fieldMapping other = error $ "Javascript server generation: Type not recognized -> " ++ show other
+    fieldMappingBoxedType _ = error "generateJSServer: Javascript has no boxed types"
 
 generateJSClient = error "Javascript client is not implemented yet"
 
-generatePythonClient = generateOutput (files, templates, fieldMapping) postOpFunc
+generatePythonClient = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
     files = []
     templates = [ ("templates/client/python/client.tpl", "py")
@@ -70,8 +72,9 @@ generatePythonClient = generateOutput (files, templates, fieldMapping) postOpFun
     fieldMapping (AS.TStruct name) = name ++ "Data"
     fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
+    fieldMappingBoxedType _ = error "generatePythonClient: Python has no boxed types"
 
-generateJavaClient = generateOutput (files, templates, fieldMapping) postOpFunc
+generateJavaClient = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
     files = [ "templates/client/java/pom.xml"
             , "templates/client/java/src/main/java/com/prototype/NetworkClient.java"
@@ -83,13 +86,22 @@ generateJavaClient = generateOutput (files, templates, fieldMapping) postOpFunc
     fieldMapping AS.TDouble = "double"
     fieldMapping (AS.TEnum enumName) = enumName
     fieldMapping (AS.TStruct strName) = strName
-    fieldMapping (AS.TList t) = "List<" ++ fieldMapping t ++ ">"
+    fieldMapping (AS.TList t) = fieldMapping t
     fieldMapping other = error $ "Java client generation: Type not recognized -> " ++ show other
+    fieldMappingBoxedType AS.TString = "String"
+    fieldMappingBoxedType AS.TInt = "Integer"
+    fieldMappingBoxedType AS.TLong = "Long"
+    fieldMappingBoxedType AS.TDouble = "Double"
+    fieldMappingBoxedType (AS.TEnum enumName) = enumName
+    fieldMappingBoxedType (AS.TStruct strName) = strName
+    fieldMappingBoxedType (AS.TList t) = "List<" ++ fieldMappingBoxedType t ++ ">"
+    fieldMappingBoxedType other = error $ "Java client generation: Boxed type not recognized -> " ++ show other
 
 -- | Applies different post processing operations to each file type.
 postOpFunc :: String -> FilePath -> IO ()
 postOpFunc "js" = applyJsBeautify
 postOpFunc "py" = applyYapf
+postOpFunc "java" = removeUselessCommasAndApplyAStyle
 postOpFunc _ = \_ -> return ()
 
 -- | Applies a beautifier (beautify-js) to generated Javascript code. It does nothing if the tool is not available.
@@ -100,9 +112,9 @@ applyJsBeautify path = do
   case outcome of
     ExitSuccess -> return ()
     (ExitFailure _) ->
-      warningM "Generation.OutputGenerator" $ "There was a problem applying the python beautifier, "
+      warningM "Generation.OutputGenerator" $ "There was a problem applying the Javascript beautifier, "
               ++ "please check it is installed and in the system's path (if "
-              ++ "you ignore this message the Python generated files will not be properly formatted"
+              ++ "you ignore this message the Python generated files will not be properly formatted)."
 
 -- | Applies a beatufier (yapf) to generated Python code. It does nothing if the tool is not available in the path.
 applyYapf :: FilePath -> IO ()
@@ -112,9 +124,40 @@ applyYapf path = do
   case outcome of
     ExitSuccess -> return ()
     (ExitFailure _) ->
-      warningM "Generation.OutputGenerator" $ "There was a problem applying the python beautifier, "
+      warningM "Generation.OutputGenerator" $ "There was a problem applying the Python beautifier, "
               ++ "please check it is installed and in the system's path (if "
-              ++ "you ignore this message the Python generated files will not be properly formatted"
+              ++ "you ignore this message the Python generated files will not be properly formatted)."
+
+-- | Removes useless commas that break the compilation (e.g., public MyClass(int a, int b, )) and then applies
+-- a beautifier (AStyle). It does not apply the beautifier if the tool in not available in the path.
+removeUselessCommasAndApplyAStyle :: FilePath -> IO ()
+removeUselessCommasAndApplyAStyle path = do
+  infoM "Generation.OutputGenerator" $ "Postprocessing " ++ path
+  removeCommas <- system $ "sed 's/,[^,]*) {.*$/\\) {/' "
+                  ++ path ++ " > tempFile && cat tempFile > "
+                  ++ path ++ " && rm tempfile"
+  case removeCommas of
+    ExitSuccess -> return ()
+    (ExitFailure _) ->
+      error $ "Unable to apply Java postprocessing, please"
+              ++ " open an issue in www.github.com/SantiMunin/harmony/issues"
+  removeCommas2 <- system $ "sed 's/, *\\().*\\)$/\\1/' "
+                  ++ path ++ " > tempFile && cat tempFile > "
+                  ++ path ++ " && rm tempfile"
+  case removeCommas2 of
+    ExitSuccess -> return ()
+    (ExitFailure _) ->
+      error $ "Unable to apply Java postprocessing, please"
+              ++ " open an issue in www.github.com/SantiMunin/harmony/issues"
+  infoM "Generation.OutputGenerator" $ "Applying astyle to " ++ path
+  outcome <- system $ "astyle " ++ path
+  case outcome of
+    ExitSuccess -> return ()
+    (ExitFailure _) ->
+      warningM "Generation.OutputGenerator" $ "There was a problem applying the Java beautifier, "
+              ++ "please check it is installed and in the system's path (if "
+              ++ "you ignore this message the Java generated files will not be properly formatted)."
+
 
 -- | Uses all the information provided by the user (and the input file) and generates
 -- the output by compiling the templates and copying all the files to the output directory.
@@ -123,10 +166,10 @@ generateOutput :: GenerationInfo -- ^ The information gathered from the user
                -> FilePath -- ^ Output path
                -> AS.ApiSpec -- ^ The information gathered from the input file (specification)
                -> IO ()
-generateOutput (files, templates, fieldMapping) postOpFunc outputPath apiSpec = do
+generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc outputPath apiSpec = do
   updateGlobalLogger "Generation.OutputGenerator" (setLevel INFO)
   forM_ files (`copy` outputPath)
-  forM_ templates (generateAndWrite outputPath (SG.generateService apiSpec fieldMapping) postOpFunc)
+  forM_ templates (generateAndWrite outputPath (SG.generateService apiSpec fieldMapping fieldMappingBoxedType) postOpFunc)
 
 -- | Copies a file.
 copy :: FilePath -- ^ Origin file
