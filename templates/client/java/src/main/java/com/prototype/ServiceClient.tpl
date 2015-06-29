@@ -47,6 +47,14 @@ public class ServiceClient {
     }
 
 {{#schema}}
+{{#schemaVars}}
+{{#isEnum}}
+public static enum {{&varBoxedType}} { {{#values}}{{value}},{{/values}} }
+{{/isEnum}}
+{{/schemaVars}}
+{{/schema}}
+
+{{#schema}}
   public static class {{schemaName}} implements Entity {
     {{#schemaVars}}
     {{^isRequired}}Optional<{{/isRequired}}{{&varBoxedType}}{{^isRequired}}>{{/isRequired}} {{varName}};
@@ -99,7 +107,12 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
 {{/isList}}
 {{/isStruct}}
 {{^isStruct}}
+{{#isEnum}}
+  getEnumOpt(jObj, {{&varBoxedType}}.class, "{{varName}}");
+{{/isEnum}}
+{{^isEnum}}
   getOpt(jObj, "{{varName}}", );
+{{/isEnum}}
 {{/isStruct}}
 {{/schemaVars}}
   return new {{schemaName}}({{#schemaVars}}{{varName}}, {{/schemaVars}});
@@ -191,6 +204,14 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
      */
     protected static <T> Optional<T> getOpt(JSONObject jObj, String key, ) {
         return jObj.has(key) ? Optional.of((T) jObj.get(key)) : Optional.<T>absent();
+    }
+
+    protected static <T extends Enum<T>> Optional<T> getEnumOpt(JSONObject jObj, Class<T> enumType, String key, ) {
+      try {
+        return jObj.has(key) ? Optional.of(Enum.valueOf(enumType, jObj.getString(key))) : Optional.<T>absent();
+      } catch (Exception e) {
+        return Optional.<T>absent();
+      }
     }
 
     protected static <T extends Entity> Optional<T> getStructOpt(
