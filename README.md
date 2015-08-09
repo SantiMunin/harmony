@@ -5,9 +5,8 @@ Harmony is a web service specification compiler that generates implementation (s
 
 + Server
   * Node.js (`-sjs`)
-+ Client
++ Client (and [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests)
   + Python (`-cpython`)
-+ Test: TODO
 
 ## Usage
 
@@ -43,6 +42,3 @@ The input file should follow the syntax specified in `language_spec/Language.cf`
 
 
     resource Person ("/person")
-
-
-
