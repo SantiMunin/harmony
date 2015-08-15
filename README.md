@@ -40,5 +40,4 @@ The input file should follow the syntax specified in `language_spec/Language.cf`
       tasks: [Task]
     }
 
-
     resource Person ("/person")
