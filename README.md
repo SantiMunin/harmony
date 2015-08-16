@@ -1,4 +1,4 @@
-# Harmony
+# Harmony [![Build Status](https://secure.travis-ci.org/SantiMunin/harmony.svg?branch=master)](http://travis-ci.org/SantiMunin/harmony)
 Harmony is a web service specification compiler that generates implementation (server and client) and tests.
 
 ## Targets supported
