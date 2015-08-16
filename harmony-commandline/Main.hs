@@ -28,11 +28,11 @@ options :: [OptDescr (Options -> Options)]
 options = [ Option "c" ["client"]
                    (OptArg (\c options -> options { generationFunctions = parseClient c:generationFunctions options})
                            "CLIENTS")
-                   "Desired output for the client"
+                   "Desired output for the client: {-cpython}"
           , Option "s" ["server"]
                    (OptArg (\s options -> options { generationFunctions = parseServer s:generationFunctions options})
                            "SERVERS")
-                   "Desired output for the server"
+                   "Desired output for the server: {-sjs}"
           , Option "o" ["output_dir"]
                    (OptArg (\dir options -> options { outputDir = fromJust dir })
                            "OUTPUT_DIR")
