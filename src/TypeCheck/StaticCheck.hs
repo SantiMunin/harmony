@@ -16,8 +16,8 @@ import           LangUtils
 import qualified TypeCheck.ApiSpec   as AS
 
 
-type Env = ( S.Set String -- ^ All the struct names
-           , AS.ApiSpec -- ^ API info
+type Env = ( S.Set String
+           , AS.ApiSpec
            )
 
 type StaticCheck a = StateT Env Err a
