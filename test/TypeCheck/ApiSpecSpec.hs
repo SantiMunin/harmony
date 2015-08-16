@@ -1,10 +1,10 @@
-module ApiSpecSpec where
+module TypeCheck.ApiSpecSpec where
 
-import           ApiSpec           as AS
 import           Control.Exception
 import qualified Data.Set          as S
 import           Test.Hspec
 import           TestUtils
+import           TypeCheck.ApiSpec as AS
 
 spec :: Spec
 spec =

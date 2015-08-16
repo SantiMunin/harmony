@@ -1,15 +1,15 @@
 module Main where
 
-import qualified ApiSpec                    as AS
 import           Control.Monad              (forM_, unless)
 import           Data.Maybe                 (fromJust)
 import qualified Generation.OutputGenerator as OG
 import           Language.ErrM
 import           Language.Par
-import qualified StaticCheck                as SC
 import           System.Console.GetOpt
 import           System.Environment         (getArgs, getProgName)
 import           System.Exit                (ExitCode (ExitFailure), exitWith)
+import qualified TypeCheck.ApiSpec          as AS
+import qualified TypeCheck.StaticCheck      as SC
 
 -- | Flags of the executable
 data Options = Options

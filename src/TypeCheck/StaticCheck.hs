@@ -1,7 +1,6 @@
 -- | Static checking of the input file.
-module StaticCheck (staticCheck) where
+module TypeCheck.StaticCheck (staticCheck) where
 
-import qualified ApiSpec             as AS
 import           Control.Arrow
 import           Control.Monad
 import           Control.Monad.State as CMS
@@ -14,6 +13,7 @@ import qualified Data.Set            as S
 import           Language.Abs
 import           Language.ErrM
 import           LangUtils
+import qualified TypeCheck.ApiSpec   as AS
 
 
 type Env = ( S.Set String -- ^ All the struct names

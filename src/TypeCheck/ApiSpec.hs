@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 -- | Defines an api spec (to be built after the static checking of the AST) and helper methods over
 -- it.
-module ApiSpec where
+module TypeCheck.ApiSpec where
 
 import           Control.Monad   (liftM)
 import           Data.DeriveTH

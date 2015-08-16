@@ -2,9 +2,9 @@
 -- specification/bnfc and the 'ApiSpec' module).
 module LangUtils where
 
-import qualified ApiSpec      as AS
-import qualified Data.Set     as S
+import qualified Data.Set          as S
 import           Language.Abs
+import qualified TypeCheck.ApiSpec as AS
 
 -- | Extracts the name of the 'Specification' (AST).
 specName :: Specification -- ^ Specification returned by the parser

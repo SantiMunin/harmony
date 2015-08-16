@@ -72,7 +72,8 @@ library
   build-tools:         alex
                      , happy
 
-  exposed-modules:     ApiSpec
+  exposed-modules:     TypeCheck.ApiSpec
+                     , TypeCheck.StaticCheck
                      , Generation.OutputGenerator
                      , Generation.ServiceGenerator
                      , Generation.TemplateCompiler
@@ -83,7 +84,6 @@ library
                      , Language.Par
                      , LangUtils
                      , Paths_harmony
-                     , StaticCheck
 
   default-language:    Haskell2010
   

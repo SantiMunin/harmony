@@ -2,7 +2,6 @@
 -- | Contains the generation logic and functions of the different possible outputs.
 module Generation.OutputGenerator(GenerationFunction, generateJSServer, generateJSClient, generatePythonClient) where
 
-import qualified ApiSpec                     as AS
 import           Control.Monad
 import           Data.List
 import qualified Data.Text.Lazy.IO           as TL
@@ -11,12 +10,13 @@ import qualified Generation.TemplateCompiler as TC
 import           Paths_harmony
 import           System.Directory
 import           System.Exit                 (ExitCode (..))
-import           System.Log.Formatter
-import           System.Log.Handler          (setFormatter)
-import           System.Log.Handler.Simple
-import           System.Log.Handler.Syslog
+import           System.Log.Formatter        ()
+import           System.Log.Handler          ()
+import           System.Log.Handler.Simple   ()
+import           System.Log.Handler.Syslog   ()
 import           System.Log.Logger
 import           System.Process              (system)
+import qualified TypeCheck.ApiSpec           as AS
 
 -- | A template is a source file and a new extension; e.g. ("template.tpl", "js") will result in
 --   "template.js" after the template compilation.

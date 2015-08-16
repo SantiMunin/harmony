@@ -1,11 +1,11 @@
 -- | Generation of 'TC.Service' objects from the specification.
 module Generation.ServiceGenerator(generateService) where
 
-import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
 import           Data.Maybe                  (fromJust, fromMaybe, isJust)
 import qualified Data.Set                    as S
 import qualified Generation.TemplateCompiler as TC
+import qualified TypeCheck.ApiSpec           as AS
 
 -- | Transforms an api specification to a service.
 generateService :: AS.ApiSpec -- ^ The specification of the web service
