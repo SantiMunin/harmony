@@ -8,6 +8,11 @@ Harmony is a web service specification compiler that generates implementation (s
 + Client (and [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests)
   + Python (`-cpython`)
 
+## Installation
+
++ Hackage: cabal install harmony
++ Source code: `git clone https://www.github.com/SantiMunin/harmony && cd harmony && cabal install`
+
 ## Usage
 
 After installing the package (`cabal install`), you will get the `harmony` executable. Afterwards:
