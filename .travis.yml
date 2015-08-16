@@ -1,9 +1,6 @@
 language: haskell
 
-ghc: 
-  - '7.6'
-  - '7.8'
-  - '7.10'
+ghc: 7.8
 
 services:
   - mongodb
@@ -16,7 +13,8 @@ before_install:
   - export PATH="$HOME/.cabal/bin:$PATH"
   - echo "Cabal updated, displaying new version..."
   - cabal -V
-  - cabal sandbox init
+  - cabal install alex
+  - cabal install happy
   - cabal install bnfc
   - sudo pip install hypothesis==1.2
   - sudo pip install requests
