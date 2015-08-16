@@ -10,6 +10,12 @@ services:
 sudo: required
 
 before_install: 
+  - cabal update
+  - cabal install cabal-install
+  - export PATH="$HOME/.cabal/bin:$PATH"
+  - cabal install
+  - echo "Cabal updated, displaying new version..."
+  - cabal -V
   - cabal sandbox init
   - cabal install alex
   - cabal install happy
