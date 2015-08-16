@@ -42,7 +42,7 @@ source-repository head
 
 library
 
-  build-depends:       base
+  build-depends:       base >= 4.6
                      , array
                      , containers
                      , BNFC
@@ -85,7 +85,7 @@ executable harmony
 
   main-is:             Main.hs
 
-  build-depends:       base
+  build-depends:       base >= 4.6
                      , harmony
 
   default-language:    Haskell2010
@@ -100,7 +100,7 @@ test-suite hspec
 
   main-is:             Spec.hs
 
-  build-depends:       base
+  build-depends:       base >= 4.6
                      , containers
                      , hspec >= 2.0
                      , QuickCheck
@@ -112,7 +112,7 @@ test-suite hspec
   default-language:    Haskell2010
 
 test-suite hlint
-  build-depends:       base
+  build-depends:       base >= 4.6
                      , hlint
 
   ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind
