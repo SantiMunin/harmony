@@ -17,7 +17,8 @@ After installing the package (`cabal install`), you will get the `harmony` execu
       -s[SERVERS]     --server[=SERVERS]         Desired output for the server
       -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
 
-Check the [Targets supported](#targets-supported) section to figure out the code related to each target.
+Check the [Targets supported](#targets-supported) section to figure out the code related to each target. Also, refer to the [wiki](https://www.github.com/SantiMunin/harmony) for more information.
+
 ## Syntax
 
 The input file should follow the syntax specified in `language_spec/Language.cf`. Example:
@@ -41,3 +42,7 @@ The input file should follow the syntax specified in `language_spec/Language.cf`
     }
 
     resource Person ("/person")
+
+## Contributing
+
+See the [wiki](https://www.github.com/SantiMunin/harmony).
