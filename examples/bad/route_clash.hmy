@@ -1,5 +1,5 @@
 service_name: duplicate_routes
-service_version: 1.0
+service_version: 1.0.0
 
 struct Str1 { str1 : String }
 struct Str2 { str2 : Int }

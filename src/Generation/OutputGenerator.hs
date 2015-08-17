@@ -106,7 +106,7 @@ postOpFunc _ = \_ -> return ()
 
 -- | Applies a beautifier (beautify-js) to generated Javascript code. It does nothing if the tool is not available.
 applyJsBeautify :: FilePath -> IO ()
-applyJsBeautify path = do
+applyJsBeautify path = return () do
   infoM "Generation.OutputGenerator" $ "Applying js-beautifier to " ++ path
   outcome <- system $ "js-beautify " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
   case outcome of
@@ -118,7 +118,7 @@ applyJsBeautify path = do
 
 -- | Applies a beatufier (yapf) to generated Python code. It does nothing if the tool is not available in the path.
 applyYapf :: FilePath -> IO ()
-applyYapf path = do
+applyYapf path = return () do
   infoM "Generation.OutputGenerator" $ "Applying yapf to " ++ path
   outcome <- system $ "yapf " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
   case outcome of

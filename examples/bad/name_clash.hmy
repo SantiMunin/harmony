@@ -1,5 +1,5 @@
 service_name: MapService
-service_version: 1.0
+service_version: 1.0.0
  
 struct MapEntry {
   @PK
