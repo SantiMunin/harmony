@@ -10,8 +10,7 @@ version:             0.1.0.3
 
 synopsis:            A web service specification compiler that generates implementation and tests.
 
-description:         This application defines a specification language for web services and reads
-                     it in order to generate implementation, tests, clients, etc...
+description:         A parser of web service specification that is able to generate servers, clients and tests.
 
 license:             GPL-3
 
