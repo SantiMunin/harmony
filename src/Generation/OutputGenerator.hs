@@ -44,7 +44,7 @@ type GenerationFunction = FilePath -- ^ Output path
 generateJSServer, generateJSClient, generatePythonClient, generateJavaClient :: GenerationFunction
 generateJSServer = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
-    files = []
+    files = [ ]
     templates = [ ("templates/server/js/server.tpl", "js")
                 , ("templates/server/js/package.tpl", "json")
                 ]
@@ -110,7 +110,7 @@ postOpFunc _ = \_ -> return ()
 
 -- | Applies a beautifier (beautify-js) to generated Javascript code. It does nothing if the tool is not available.
 applyJsBeautify :: FilePath -> IO ()
-applyJsBeautify path = return () do
+applyJsBeautify path = do
   infoM "Generation.OutputGenerator" $ "Applying js-beautifier to " ++ path
   outcome <- system $ "js-beautify " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
   case outcome of
@@ -122,7 +122,7 @@ applyJsBeautify path = return () do
 
 -- | Applies a beatufier (yapf) to generated Python code. It does nothing if the tool is not available in the path.
 applyYapf :: FilePath -> IO ()
-applyYapf path = return () do
+applyYapf path = do
   infoM "Generation.OutputGenerator" $ "Applying yapf to " ++ path
   outcome <- system $ "yapf " ++ path ++ " > tempfile && cat tempfile > " ++ path ++ " && rm tempfile"
   case outcome of
@@ -182,7 +182,7 @@ copy :: FilePath -- ^ Origin file
 copy origin dest = do
   let destFile = (dest ++ dropWhile (/= '/')  origin)
   let destDir = dirName destFile
-  infoM "Generation.OutputGenerator" $ "Creating " ++ show destFile
+  infoM "Generation.OutputGenerator" $ "Copying " ++ show destFile
   cabalFilePath <- getDataFileName origin
   createDirectoryIfMissing {- create parent dirs too -} True destDir
   copyFile cabalFilePath destFile
@@ -206,5 +206,5 @@ generateAndWrite dest service postOpFunc (templatePath, newExt) = do
   postOpFunc newExt destFile
   where
     destFileWithoutExt = dest ++ takeWhile (/= '.') (dropWhile (/= '/') templatePath)
-    destDir = dirName dest
+    destDir = dirName destFile
     destFile = destFileWithoutExt ++ "." ++ newExt
