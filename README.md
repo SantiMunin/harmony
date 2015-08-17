@@ -1,13 +1,17 @@
-# Harmony
+# Harmony [![Hackage version](https://img.shields.io/hackage/v/harmony.svg?style=flat)](https://hackage.haskell.org/package/harmony) [![Build Status](https://secure.travis-ci.org/SantiMunin/harmony.svg?branch=master)](http://travis-ci.org/SantiMunin/harmony)
 Harmony is a web service specification compiler that generates implementation (server and client) and tests.
 
 ## Targets supported
 
 + Server
   * Node.js (`-sjs`)
-+ Client
++ Client (and [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests)
   + Python (`-cpython`)
-+ Test: TODO
+
+## Installation
+
++ From Hackage: `cabal install harmony`
++ From source code: `git clone https://www.github.com/SantiMunin/harmony && cd harmony && cabal install`
 
 ## Usage
 
@@ -18,7 +22,8 @@ After installing the package (`cabal install`), you will get the `harmony` execu
       -s[SERVERS]     --server[=SERVERS]         Desired output for the server
       -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
 
-Check the [Targets supported](#targets-supported) section to figure out the code related to each target.
+Check the [Targets supported](#targets-supported) section to figure out the code related to each target. Also, refer to the [wiki](https://github.com/SantiMunin/harmony/wiki) for more information.
+
 ## Syntax
 
 The input file should follow the syntax specified in `language_spec/Language.cf`. Example:
@@ -41,8 +46,8 @@ The input file should follow the syntax specified in `language_spec/Language.cf`
       tasks: [Task]
     }
 
-
     resource Person ("/person")
 
+## Contributing
 
-
+See the [wiki](https://github.com/SantiMunin/harmony/wiki).

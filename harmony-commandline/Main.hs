@@ -1,15 +1,15 @@
 module Main where
 
-import qualified ApiSpec                    as AS
 import           Control.Monad              (forM_, unless)
 import           Data.Maybe                 (fromJust)
 import qualified Generation.OutputGenerator as OG
 import           Language.ErrM
 import           Language.Par
-import qualified StaticCheck                as SC
 import           System.Console.GetOpt
 import           System.Environment         (getArgs, getProgName)
 import           System.Exit                (ExitCode (ExitFailure), exitWith)
+import qualified TypeCheck.ApiSpec          as AS
+import qualified TypeCheck.StaticCheck      as SC
 
 -- | Flags of the executable
 data Options = Options
@@ -28,11 +28,11 @@ options :: [OptDescr (Options -> Options)]
 options = [ Option "c" ["client"]
                    (OptArg (\c options -> options { generationFunctions = parseClient c:generationFunctions options})
                            "CLIENTS")
-                   "Desired output for the client"
+                   "Desired output for the client: {-cpython}"
           , Option "s" ["server"]
                    (OptArg (\s options -> options { generationFunctions = parseServer s:generationFunctions options})
                            "SERVERS")
-                   "Desired output for the server"
+                   "Desired output for the server: {-sjs}"
           , Option "o" ["output_dir"]
                    (OptArg (\dir options -> options { outputDir = fromJust dir })
                            "OUTPUT_DIR")

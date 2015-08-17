@@ -1,12 +1,12 @@
 module LangUtilsSpec where
 
-import qualified ApiSpec         as AS
-import qualified Data.Set        as S
+import qualified Data.Set          as S
 import           Language.Abs
 import           LangUtils
 import           Test.Hspec
 import           Test.QuickCheck
-import           TestUtils       ()
+import           TestUtils         ()
+import qualified TypeCheck.ApiSpec as AS
 
 spec :: Spec
 spec =

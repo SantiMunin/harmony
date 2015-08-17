@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Generation.ServiceGeneratorSpec where
 
-import qualified ApiSpec                     as AS
 import qualified Data.Map                    as M
 import           Data.Maybe                  (fromJust, isJust, isNothing)
 import           Generation.ServiceGenerator
@@ -10,6 +9,7 @@ import           Test.Hspec
 import           Test.QuickCheck
 import qualified Test.QuickCheck.Property    as P
 import           Text.Show.Functions         ()
+import qualified TypeCheck.ApiSpec           as AS
 
 spec :: Spec
 spec =

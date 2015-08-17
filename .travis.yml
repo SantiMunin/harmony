@@ -8,6 +8,11 @@ services:
 sudo: required
 
 before_install: 
+  - cabal update
+  - cabal install cabal-install
+  - export PATH="$HOME/.cabal/bin:$PATH"
+  - echo "Cabal updated, displaying new version..."
+  - cabal -V
   - cabal install alex
   - cabal install happy
   - cabal install bnfc
