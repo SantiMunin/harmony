@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 -- | Static checking of the input file.
 module TypeCheck.StaticCheck (staticCheck) where
 
