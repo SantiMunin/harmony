@@ -5,8 +5,10 @@ Harmony is a web service specification compiler that generates implementation (s
 
 + Server
   * Node.js (`-sjs`)
-+ Client (and [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests)
++ Client 
   + Python (`-cpython`)
+    + Includes [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests.
+  + Java (`-cjava`
 
 ## Installation
 
@@ -17,11 +19,12 @@ Harmony is a web service specification compiler that generates implementation (s
 
 After installing the package (`cabal install`), you will get the `harmony` executable. Afterwards:
 
-    Usage: harmony [OPTION...] input_file
-      -c[CLIENTS]     --client[=CLIENTS]         Desired output for the client
-      -s[SERVERS]     --server[=SERVERS]         Desired output for the server
-      -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
-
+```
+Usage: harmony [OPTION...] input_file
+  -c[CLIENTS]     --client[=CLIENTS]         Desired output for the client: {-cpython, -cjava}
+  -s[SERVERS]     --server[=SERVERS]         Desired output for the server: {-sjs}
+  -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
+```
 Check the [Targets supported](#targets-supported) section to figure out the code related to each target. Also, refer to the [wiki](https://github.com/SantiMunin/harmony/wiki) for more information.
 
 ## Syntax

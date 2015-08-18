@@ -28,7 +28,7 @@ options :: [OptDescr (Options -> Options)]
 options = [ Option "c" ["client"]
                    (OptArg (\c options -> options { generationFunctions = parseClient c:generationFunctions options})
                            "CLIENTS")
-                   "Desired output for the client: {-cpython}"
+                   "Desired output for the client: {-cpython, -cjava}"
           , Option "s" ["server"]
                    (OptArg (\s options -> options { generationFunctions = parseServer s:generationFunctions options})
                            "SERVERS")
