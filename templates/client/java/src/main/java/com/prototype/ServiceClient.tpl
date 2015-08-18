@@ -154,7 +154,7 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
 
 {{#writable}}
 {{#hasKeyField}}
-  public ServerResponse<String> put{{schemaName}}({{schemaName}} item, {{#requiresAuth}}, String token{{/requiresAuth}}) throws IOException {
+  public ServerResponse<String> put{{schemaName}}({{schemaName}} item, {{#requiresAuth}}String token{{/requiresAuth}}) throws IOException {
         NetworkClient.Response response = networkClient.performPut(baseUrl + "/{{&value}}", item.toJSON().toString(), );
         int statusCode = response.getStatusCode();
         int statusType = statusCode / 100;
