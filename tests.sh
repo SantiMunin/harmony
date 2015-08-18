@@ -9,10 +9,10 @@ exitWithMessageIfFailure() {
 }
 
 checkGood() {
-  echo "Generating target for examples/good/$1"
+  echo "\nGenerating target for examples/good/$1"
   harmony -sjs -cpython examples/good/$1
   exitWithMessageIfFailure $? "Harmony couldn't compile examples/good/$1"
-  printf "%s" "Installing node.js dependencies..."
+  printf "%s\n" "Installing node.js dependencies..."
   cd harmony_output/server/js
   npm-cache install 
   exitWithMessageIfFailure $? "There was a problem while executing npm-cache install"
@@ -30,8 +30,19 @@ checkGood() {
   exitWithMessageIfFailure $TEST_OUTPUT "There was a problem while executing the tests (or they failed)."
 }
 
+checkJavaGood() {
+  echo "\nGenerating Java target for examples/good/$1"
+  harmony -cjava examples/good/$1
+  exitWithMessageIfFailure $? "Harmony couldn't compile examples/good/$1"
+  printf "%s" "Compiling Java target... "
+  mvn -f harmony_output/client/java/pom.xml compile | grep 'BUILD SUCCESS' > /dev/null
+  exitWithMessageIfFailure $? "Maven could not compile the generated Java target for examples/good/$1"
+  printf "%s" "OK"
+  # TODO: once tests are implemented, this should use a server and execute them
+}
+
 checkBad() {
-  echo "Trying to generate target for examples/bad/$1 (it should fail)"
+  echo "\nTrying to generate target for examples/bad/$1 (it should fail)"
   harmony -sjs -cpython examples/bad/$1 2> /dev/null
   if [ $? = 0 ]; then
     echo "File examples/bad/$1 compiled successfully (it shouldn't)";
@@ -47,6 +58,7 @@ cabal install
 echo "Checking good examples"
 for file in `ls examples/good`; do
   checkGood $file
+  checkJavaGood $file
 done
 
 echo "Checking bad examples"
