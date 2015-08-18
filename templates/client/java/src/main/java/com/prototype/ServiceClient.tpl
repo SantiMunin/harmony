@@ -122,12 +122,12 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
 {{/schema}}
 
 {{#requiresAuth}}
-  public ServerResponse<String> login(login, password) throws IOException {
+  public ServerResponse<String> login(String login, String password) throws IOException {
     NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "login"+ "/" + login + "/" + password);
     return new ServerResponse<String>(response.getStatusCode(), response.getContent());
   }
 
-  public ServerResponse<String> register(login, password) throws IOException {
+  public ServerResponse<String> register(String login, String password) throws IOException {
     NetworkClient.Response response = networkClient.performPost(baseUrl + "/" + "login", "{ \"login\" : " + login + ", \"password\"" + password +"}");
     return new ServerResponse<String>(response.getStatusCode(), response.getContent());
   }
@@ -135,7 +135,7 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
 
 {{#schema}}{{#schemaRoute}}
 
-  public ServerResponse<List<{{schemaName}}>> get{{schemaName}}List({{#requiresAuth}}token{{/requiresAuth}}) throws IOException {
+  public ServerResponse<List<{{schemaName}}>> get{{schemaName}}List({{#requiresAuth}}String token{{/requiresAuth}}) throws IOException {
     NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "{{&value}}" {{#requiresAuth}}+ "/" + token{{/requiresAuth}});
         JSONArray array = new JSONArray(response.getContent(), );
         List<{{schemaName}}> list = new ArrayList<{{schemaName}}>();
@@ -146,7 +146,7 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
   }
 
   public ServerResponse<Optional<{{schemaName}}>> get{{schemaName}}(String itemId {{#requiresAuth}}, String token{{/requiresAuth}}) throws IOException {
-        NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "{{&value}}"+ "/" + itemId {{#requiresAuth}}, String token{{/requiresAuth}});
+        NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "{{&value}}"+ "/" + itemId {{#requiresAuth}}, token{{/requiresAuth}});
         int statusCode = response.getStatusCode();
         int statusType = statusCode / 100;
         return new ServerResponse<Optional< {{schemaName}} >>(statusCode, statusType == 2 ? Optional.<{{schemaName}}>of(new {{schemaName}}Factory().fromJSON(new JSONObject(response.getContent()))) : Optional.<{{schemaName}}>absent(), );

@@ -40,6 +40,10 @@ public class NetworkClient {
         return new Response(httpConnection.getResponseCode(), getContent(httpConnection));
     }
 
+    public Response performGet(String url, String token) throws IOException {
+        return performGet(url + "/" + token);
+    }
+
     /**
      * Performs a post operation, returning code and response body/error.
      */
@@ -47,11 +51,19 @@ public class NetworkClient {
         return performOperationWithBody(url, body, "POST");
     }
 
+    public Response performPost(String url, String body, String token) throws IOException {
+        return performOperationWithBody(url + "/" + token, body, "POST");
+    }
+
     /**
      * Performs a put operation, returning code and response body/error.
      */
     public Response performPut(String url, String body) throws IOException {
         return performOperationWithBody(url, body, "PUT");
+    }
+
+    public Response performPut(String url, String body, String token) throws IOException {
+        return performOperationWithBody(url + "/" + token, body, "PUT");
     }
 
     private Response performOperationWithBody(String url, String body, String method) throws IOException {
