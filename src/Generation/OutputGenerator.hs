@@ -139,7 +139,7 @@ removeUselessCommasAndApplyAStyle path = do
   infoM "Generation.OutputGenerator" $ "Postprocessing " ++ path
   removeCommas <- system $ "sed 's/,[^,]*) {.*$/\\) {/' "
                   ++ path ++ " > tempFile && cat tempFile > "
-                  ++ path ++ " && rm tempfile"
+                  ++ path ++ " && rm tempFile"
   case removeCommas of
     ExitSuccess -> return ()
     (ExitFailure _) ->
@@ -147,7 +147,7 @@ removeUselessCommasAndApplyAStyle path = do
               ++ " open an issue in www.github.com/SantiMunin/harmony/issues"
   removeCommas2 <- system $ "sed 's/, *\\().*\\)$/\\1/' "
                   ++ path ++ " > tempFile && cat tempFile > "
-                  ++ path ++ " && rm tempfile"
+                  ++ path ++ " && rm tempFile"
   case removeCommas2 of
     ExitSuccess -> return ()
     (ExitFailure _) ->
