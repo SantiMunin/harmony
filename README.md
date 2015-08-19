@@ -8,7 +8,7 @@ Harmony is a web service specification compiler that generates implementation (s
 + Client 
   + Python (`-cpython`)
     + Includes [Hypothesis](https://github.com/DRMacIver/hypothesis) based tests.
-  + Java (`-cjava`
+  + Java (`-cjava`)
 
 ## Installation
 
