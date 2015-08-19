@@ -17,7 +17,7 @@ spec =
     context "generateService" $ do
 
       it "translates correctly (name, version) from ApiSpec to Service" $ property $
-        \apiSpec fieldMapping -> let result = generateService apiSpec fieldMapping in
+        \apiSpec fieldMapping -> let result = generateService apiSpec fieldMapping boxedFieldMapping in
                                    (TC.name result == AS.name apiSpec) && (TC.version result == AS.version apiSpec)
 
       it "translates correctly the enums from ApiSpec to Service" $ property prop_enumsCorrectlyTranslated
@@ -32,7 +32,7 @@ prop_enumsCorrectlyTranslated :: AS.ApiSpec -> Property
 prop_enumsCorrectlyTranslated apiSpec =
   P.printTestCase ("\nResult of generateService: " ++  show result) (property $ all enumProcessingCorrect $ allVariables result)
   where
-    result = generateService apiSpec fieldMapping
+    result = generateService apiSpec fieldMapping boxedFieldMapping
     apiSpecEnumInfo = AS.enums apiSpec
     -- It is either not an enum or it has some values and the enum exists.
     enumProcessingCorrect schemaVar =
@@ -45,7 +45,7 @@ prop_structsCorrectlyTranslated :: AS.ApiSpec -> Property
 prop_structsCorrectlyTranslated apiSpec =
   P.printTestCase ("\nResult of generateService: " ++ show result) (property $ all structProcessingCorrect $ allVariables result)
   where
-    result = generateService apiSpec fieldMapping
+    result = generateService apiSpec fieldMapping boxedFieldMapping
     apiSpecStructInfo = AS.structs apiSpec
     structProcessingCorrect schemaVar =
       if TC.isStruct schemaVar
@@ -57,7 +57,7 @@ prop_handlesPrimaryKeyCorrectly :: AS.ApiSpec -> Property
 prop_handlesPrimaryKeyCorrectly apiSpec =
   P.printTestCase ("\nResult of generateService: " ++ show result) (property $ all primaryKeyProcessingCorrect $ allVariables result)
   where
-    result = generateService apiSpec fieldMapping
+    result = generateService apiSpec fieldMapping boxedFieldMapping
     primaryKeyProcessingCorrect schemaVar =
       if TC.isKey schemaVar
       then assertIsKey schemaVar
@@ -80,6 +80,10 @@ fieldMapping AS.TBool = "Bool"
 fieldMapping (AS.TEnum t) = t
 fieldMapping (AS.TStruct t) = t
 fieldMapping (AS.TList t) = fieldMapping t
+
+-- Re use fieldMapping, we don't care about the concrete values for these tests.
+boxedFieldMapping :: AS.Type -> String
+boxedFieldMapping = fieldMapping
 
 main :: IO ()
 main = hspec spec

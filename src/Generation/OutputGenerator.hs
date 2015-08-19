@@ -180,7 +180,7 @@ copy :: FilePath -- ^ Origin file
      -> FilePath -- ^ Destination path
      -> IO ()
 copy origin dest = do
-  let destFile = (dest ++ dropWhile (/= '/')  origin)
+  let destFile = dest ++ dropWhile (/= '/')  origin
   let destDir = dirName destFile
   infoM "Generation.OutputGenerator" $ "Copying " ++ show destFile
   cabalFilePath <- getDataFileName origin
