@@ -13,7 +13,10 @@ Harmony is a web service specification compiler that generates implementation (s
 ## Installation
 
 + From Hackage: `cabal install harmony`
-+ From source code: `git clone https://www.github.com/SantiMunin/harmony && cd harmony && cabal install`
++ From source code: 
+  + `git clone https://www.github.com/SantiMunin/harmony`
+  + `cd harmony`
+  + `cabal install`
 
 ## Usage
 
