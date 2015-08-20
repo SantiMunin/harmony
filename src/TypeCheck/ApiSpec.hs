@@ -6,6 +6,7 @@ module TypeCheck.ApiSpec where
 
 import           Control.Monad   (liftM)
 import           Data.DeriveTH
+import           Data.List
 import qualified Data.Map        as M
 import qualified Data.Set        as S
 import           Test.QuickCheck
@@ -35,7 +36,12 @@ data Modifier =
 derive makeArbitrary ''Modifier
 
 -- | A field has a type, an identifier and a set of modifiers.
-newtype FieldInfo = FI (Id, Type, S.Set Modifier) deriving (Show, Eq, Ord)
+newtype FieldInfo = FI (Id, Type, S.Set Modifier) deriving (Eq, Ord)
+
+instance (Show FieldInfo) where
+  show (FI (name, type', modifiers)) = intercalate "\n" [printModifiers modifiers, "  " ++ name ++ ": " ++ show type']
+    where
+      printModifiers modifiers = intercalate "\n  " $ map (\m -> "@" ++ show m) (S.toList modifiers)
 
 -- | A struct is a list of fields.
 type StructInfo = [FieldInfo]
@@ -53,7 +59,18 @@ data Type = TInt
           | TString
           | TEnum Id
           | TStruct Id
-          | TList Type deriving (Eq, Ord, Show)
+          | TList Type deriving (Eq, Ord)
+
+instance (Show Type) where
+  show TInt = "Int"
+  show TLong = "Long"
+  show TFloat = "Float"
+  show TDouble = "Double"
+  show TBool = "Boolean"
+  show TString = "String"
+  show (TEnum name) = name
+  show (TStruct name) = name
+  show (TList type') = "[" ++ show type' ++ "]"
 
 instance (CoArbitrary Type) where
   coarbitrary = coarbitraryShow
@@ -79,7 +96,30 @@ data ApiSpec = AS { name         :: String -- ^ Name of the service
                   , resources    :: Resources -- ^ Information about the resources defined
                   }
 
-derive makeShow ''ApiSpec
+instance (Show ApiSpec) where
+  show as = intercalate "\n" [ printName as
+                             , printVersion as
+                             , "\n" ++ printModules as
+                             , "\n" ++ printEnums as
+                             , "\n" ++ printStructs as
+                             , "\n" ++ printResources as
+                             ]
+    where
+      printName as = "service_name: " ++ name as
+      printVersion as = "service_versions" ++ version as
+      printModules as | requiresAuth as = "require modules [ Authentication ]"
+                      | otherwise = ""
+      printEnums as = intercalate "\n" $ map printEnum (M.toList $ enums as)
+        where
+          printEnum (name, info) = "enum " ++ name ++ " { " ++ printEnumValues info ++ " }"
+          printEnumValues info = intercalate ", " $ map show info
+      printStructs as = intercalate "\n\n" $ map printStruct (structs as)
+        where
+          printStruct (name, info) = "struct " ++ name ++ " {\n" ++ intercalate ",\n" (printFields info) ++ "\n}"
+          printFields = map (\f -> "  " ++ show f)
+      printResources as = intercalate "\n" $ map printResource (M.toList $ resources as)
+        where
+          printResource (structName, (route, writable)) = "resource " ++ structName ++ " (\"" ++ route ++ "\")" ++ if writable then "" else " read_only"
 
 -- | Gets the primary key of a struct if it was specified.
 getPrimaryKey :: StructInfo -- ^ The info of the struct
@@ -112,7 +152,7 @@ strName other = error $ "strName of a non struct type (" ++ show other ++ ")"
 
 -- | Generates a non-empty arbitrary 'String'.
 nonEmptyString :: Gen String
-nonEmptyString = listOf1 arbitrary
+nonEmptyString = listOf1 (elements ['a'..'z'])
 
 -- | Generates an arbitrary 'FieldInfo', making sure that the ids used for enums and structs are valid.
 generateRandomFieldInfo :: [Id] -> [Id] -> Gen FieldInfo
@@ -120,7 +160,8 @@ generateRandomFieldInfo enumIds structIds =
   do
     id <- nonEmptyString
     t <- generateRandomType enumIds structIds
-    modifiers <- listOf arbitrary
+    nModifiers <- oneof $ map return [0..2]
+    modifiers <- vectorOf nModifiers arbitrary
     return $ FI (id, t, S.fromList modifiers)
   where
     generateRandomType :: [Id] -> [Id] -> Gen Type
@@ -167,10 +208,13 @@ generateRandomFieldInfo enumIds structIds =
 instance (Arbitrary ApiSpec) where
   arbitrary = do
     name' <- nonEmptyString
-    version' <- nonEmptyString
-    enumIds <- listOf nonEmptyString
+    -- TODO: make arbitrary
+    let version' = "1.0.0"
+    nEnums <- oneof $ map return [0..5]
+    enumIds <- vectorOf nEnums nonEmptyString
     enums' <- mapM createEnum enumIds
-    structIds <- listOf nonEmptyString
+    nStructs <- oneof $ map return [1..7]
+    structIds <- vectorOf nStructs nonEmptyString
     structs' <- mapM (createStruct enumIds structIds) structIds
     resources' <- mapM (createResource . fst) structs'
     return AS { name = name'
@@ -188,7 +232,8 @@ instance (Arbitrary ApiSpec) where
 
       createStruct :: [Id] -> [Id] -> Id -> Gen (Id, StructInfo)
       createStruct enumIds structIds thisStructId = do
-        rawFields <- listOf1 $ generateRandomFieldInfo enumIds structIds
+        nFields <- oneof $ map return [1..8]
+        rawFields <- vectorOf nFields $ generateRandomFieldInfo enumIds structIds
         shouldHavePk <- arbitrary
         let fields = filterPrimaryKey shouldHavePk rawFields
         return (thisStructId, fields)
@@ -210,5 +255,8 @@ instance (Arbitrary Type) where
     case t of
          TEnum _ -> liftM TEnum nonEmptyString
          TStruct _ -> liftM TStruct nonEmptyString
-         TList _ -> liftM TList arbitrary
+         TList _ -> liftM TList arbitrarySingleType
          other -> return other
+      where
+        -- TODO: add TEnum and TList
+        arbitrarySingleType = elements [TInt, TLong, TFloat, TDouble, TBool, TString]
