@@ -17,7 +17,7 @@ before_install:
   - cabal install happy
   - cabal install bnfc
   - npm install -g npm-cache
-  - sudo pip install venv
+  - sudo pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
 
