@@ -106,7 +106,7 @@ instance (Show ApiSpec) where
                              ]
     where
       printName as = "service_name: " ++ name as
-      printVersion as = "service_versions" ++ version as
+      printVersion as = "service_version: " ++ version as
       printModules as | requiresAuth as = "require modules [ Authentication ]"
                       | otherwise = ""
       printEnums as = intercalate "\n" $ map printEnum (M.toList $ enums as)
