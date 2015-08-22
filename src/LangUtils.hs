@@ -74,10 +74,12 @@ fieldType (FDef _ _ ft) = ft
 fieldSpecType :: (S.Set String, S.Set String) -- ^ (Struct names, Enum names)
               -> FType -- ^ Field type
               -> AS.Type -- ^ 'ApiSpec' field type
+fieldSpecType _ FBoolean = AS.TBool
 fieldSpecType _ FString = AS.TString
 fieldSpecType _ FInt = AS.TInt
 fieldSpecType _ FLong = AS.TLong
 fieldSpecType _ FDouble = AS.TDouble
+fieldSpecType _ FFloat = AS.TFloat
 fieldSpecType (strs, enums) (FDefined (Ident n)) | n `S.member` enums = AS.TEnum n
                                                  | n `S.member` strs = AS.TStruct n
                                                  | otherwise = error $ "getType: " ++ n ++ " is not defined."

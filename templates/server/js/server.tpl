@@ -3,6 +3,9 @@ var express = require('express'),
     mongoose = require('mongoose'),
     app = express(),
     args = process.argv.slice(2);
+// For doubles
+require('mongoose-double')(mongoose);
+var SchemaTypes = mongoose.Schema.Types;
 
 app.use(bodyParser.json());
 

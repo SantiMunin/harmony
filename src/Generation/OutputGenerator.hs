@@ -48,10 +48,13 @@ generateJSServer = generateOutput (files, templates, fieldMapping, fieldMappingB
     templates = [ ("templates/server/js/server.tpl", "js")
                 , ("templates/server/js/package.tpl", "json")
                 ]
+    fieldMapping AS.TBool = "Boolean"
     fieldMapping AS.TString = "String"
     fieldMapping AS.TLong = "Number"
     fieldMapping AS.TInt = "Number"
-    fieldMapping AS.TDouble = "Number"
+    fieldMapping AS.TDouble = "SchemaTypes.Double"
+    -- TODO: try to use Float instead of Double
+    fieldMapping AS.TFloat = "SchemaTypes.Double"
     -- An enum is an string with constraints.
     fieldMapping (AS.TEnum _) = "String"
     fieldMapping (AS.TStruct t) = t
@@ -68,10 +71,13 @@ generatePythonClient = generateOutput (files, templates, fieldMapping, fieldMapp
                 , ("templates/client/python/test.tpl", "py")
                 ]
     -- These are the generators for the different types used by Hypothesis.
-    fieldMapping AS.TString = "strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
-    fieldMapping AS.TInt = "integers_in_range(-1000,1000)"
-    fieldMapping AS.TLong = "integers_in_range(-1000,1000)"
-    fieldMapping AS.TDouble = "error:PythonNoTypes (Double)"
+    fieldMapping AS.TBool = "booleans()"
+    fieldMapping AS.TString = "lists(elements=one_of(integers(65, 90), integers(97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
+    fieldMapping AS.TInt = "integers(-1000,1000)"
+    fieldMapping AS.TLong = "integers(-1000,1000)"
+    -- TODO: check handling of floats in Python
+    fieldMapping AS.TDouble = "floats(-1000.0, 1000.0)"
+    fieldMapping AS.TFloat = "floats(-1000.0, 1000.0)"
     fieldMapping (AS.TEnum _) = "error: no directly translation from enum type to Hypothesis type"
     fieldMapping (AS.TStruct name) = name ++ "Data"
     fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
@@ -84,18 +90,22 @@ generateJavaClient = generateOutput (files, templates, fieldMapping, fieldMappin
             , "templates/client/java/src/main/java/com/prototype/NetworkClient.java"
             ]
     templates = [ ("templates/client/java/src/main/java/com/prototype/ServiceClient.tpl", "java") ]
+    fieldMapping AS.TBool = "boolean"
     fieldMapping AS.TString = "String"
     fieldMapping AS.TInt = "int"
     fieldMapping AS.TLong = "long"
     fieldMapping AS.TDouble = "double"
+    fieldMapping AS.TFloat = "float"
     fieldMapping (AS.TEnum enumName) = enumName
     fieldMapping (AS.TStruct strName) = strName
     fieldMapping (AS.TList t) = fieldMapping t
     fieldMapping other = error $ "Java client generation: Type not recognized -> " ++ show other
+    fieldMappingBoxedType AS.TBool = "Boolean"
     fieldMappingBoxedType AS.TString = "String"
     fieldMappingBoxedType AS.TInt = "Integer"
     fieldMappingBoxedType AS.TLong = "Long"
     fieldMappingBoxedType AS.TDouble = "Double"
+    fieldMappingBoxedType AS.TFloat = "Float"
     fieldMappingBoxedType (AS.TEnum enumName) = enumName
     fieldMappingBoxedType (AS.TStruct strName) = strName
     fieldMappingBoxedType (AS.TList t) = "List<" ++ fieldMappingBoxedType t ++ ">"

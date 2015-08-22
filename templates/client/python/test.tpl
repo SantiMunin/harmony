@@ -1,7 +1,7 @@
 from client import *
 from hypothesis import *
-from hypothesis.searchstrategy.collections import *
 from hypothesis.specifiers import * 
+from hypothesis.strategies import *
 import unittest
 import copy
 import sys
@@ -13,21 +13,29 @@ def is_valid_id_string(id_string):
 
 class ServiceTest(unittest.TestCase):
 
+    def typesAre(self, t1, t2, name1, name2):
+      return (t1 == name1 and t2 == name2) or (t1 == name2 and t2 == name1)
+
     def assertEqual(self, item1, item2):
         i1 = copy.deepcopy(item1)
         i2 = copy.deepcopy(item2)
+        t1 = type(i1).__name__
+        t2 = type(i2).__name__
         if type(i1) != type(i2):
-            t1 = type(i1).__name__
-            t2 = type(i2).__name__
-            # str and unicode can be treated as the same type
-            if not ((t1 == "unicode" and t2 == "str") or (t1 == "str" and t2 == "unicode")):
+            # some types can be treated as the same type
+            if not (self.typesAre(t1, t2, "unicode", "str") or self.typesAre(t1, t2, "int", "float")):
                 self.fail("Different types ("+ type(i1).__name__ + "," + type(i2).__name__ + ")")
+        if (t1 == "float"):
+           self.assertEquals_decimal(i1, i2)
         if isinstance(i1, dict):
             self.assertEquals_dict(i1, i2)
         elif isinstance(i1, list):
             self.assertEquals_list(i1, i2)
         else:  
             super(ServiceTest, self).assertEqual(i1, i2)
+
+    def assertEquals_decimal(self, f1, f2):
+      return abs(float(f1) - float(f2)) < 0.01
  
     def assertEquals_dict(self, d1, d2):
         self.rm_id_key(d1)
@@ -71,7 +79,8 @@ Settings.default.average_list_length = 3
 {{#schema}}
 {{#schemaRoute}}
 class Test{{schemaName}}(ServiceTest):
-  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
+  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, lists(elements=one_of(integers(65, 90), integers(
+        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#schemaVars}}
 {{#isUserLogin}}
@@ -149,7 +158,8 @@ class Test{{schemaName}}(ServiceTest):
 
 {{#requiresAuth}}
 class LoginTest(ServiceTest):
-  @given(strategy([strategy(integers_in_range(65,90)) | strategy(integers_in_range(97, 122))]).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
+  @given(lists(elements=one_of(integers(65, 90), integers(
+        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
   def login_test(self, userData):
     register = register(url, userData, userData)
     correctLoginResponse = login(url, userData, userData)

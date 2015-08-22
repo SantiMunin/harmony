@@ -1,0 +1,9 @@
+service_name: FloatAndDouble
+service_version: 1.0.0
+
+struct Struct1 {
+  f : Float,
+  d : Double
+}
+
+resource Struct1 ("/struct")
