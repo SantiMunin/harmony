@@ -30,6 +30,7 @@ data-files:          templates/server/js/package.tpl
                    , templates/server/js/server.tpl
                    , templates/client/python/client.tpl
                    , templates/client/python/test.tpl
+                   , templates/client/python/requirements.txt
                    , templates/client/java/pom.xml
                    , templates/client/java/src/main/java/com/prototype/NetworkClient.java
                    , templates/client/java/src/main/java/com/prototype/ServiceClient.tpl

@@ -44,7 +44,7 @@ type GenerationFunction = FilePath -- ^ Output path
 generateJSServer, generateJSClient, generatePythonClient, generateJavaClient :: GenerationFunction
 generateJSServer = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
-    files = [ ]
+    files = []
     templates = [ ("templates/server/js/server.tpl", "js")
                 , ("templates/server/js/package.tpl", "json")
                 ]
@@ -66,7 +66,7 @@ generateJSClient = error "Javascript client is not implemented yet"
 
 generatePythonClient = generateOutput (files, templates, fieldMapping, fieldMappingBoxedType) postOpFunc
   where
-    files = []
+    files = [ "templates/client/python/requirements.txt" ]
     templates = [ ("templates/client/python/client.tpl", "py")
                 , ("templates/client/python/test.tpl", "py")
                 ]
