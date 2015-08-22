@@ -112,7 +112,7 @@ instance (Show ApiSpec) where
       printEnums as = intercalate "\n" $ map printEnum (M.toList $ enums as)
         where
           printEnum (name, info) = "enum " ++ name ++ " { " ++ printEnumValues info ++ " }"
-          printEnumValues info = intercalate ", " info
+          printEnumValues = intercalate ", "
       printStructs as = intercalate "\n\n" $ map printStruct (structs as)
         where
           printStruct (name, info) = "struct " ++ name ++ " {\n" ++ intercalate ",\n" (printFields info) ++ "\n}"
