@@ -1,0 +1,8 @@
+service_name: EmptyStruct
+service_version: 1.0.0
+
+struct Struct1 {
+  
+}
+
+resource Struct1 ("/struct1")
