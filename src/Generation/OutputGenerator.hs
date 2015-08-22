@@ -117,7 +117,7 @@ applyJsBeautify path = do
     ExitSuccess -> return ()
     (ExitFailure _) ->
       warningM "Generation.OutputGenerator" $ "There was a problem applying the Javascript beautifier, "
-              ++ "please check it is installed and in the system's path (if "
+              ++ "please check if it is installed and in the system's path (if "
               ++ "you ignore this message the Python generated files will not be properly formatted)."
 
 -- | Applies a beatufier (yapf) to generated Python code. It does nothing if the tool is not available in the path.
@@ -129,7 +129,7 @@ applyYapf path = do
     ExitSuccess -> return ()
     (ExitFailure _) ->
       warningM "Generation.OutputGenerator" $ "There was a problem applying the Python beautifier, "
-              ++ "please check it is installed and in the system's path (if "
+              ++ "please check if it is installed and in the system's path (if "
               ++ "you ignore this message the Python generated files will not be properly formatted)."
 
 -- | Removes useless commas that break the compilation (e.g., public MyClass(int a, int b, )) and then applies
@@ -159,7 +159,7 @@ removeUselessCommasAndApplyAStyle path = do
     ExitSuccess -> return ()
     (ExitFailure _) ->
       warningM "Generation.OutputGenerator" $ "There was a problem applying the Java beautifier, "
-              ++ "please check it is installed and in the system's path (if "
+              ++ "please check if it is installed and in the system's path (if "
               ++ "you ignore this message the Java generated files will not be properly formatted)."
 
 
