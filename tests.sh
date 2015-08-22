@@ -23,7 +23,7 @@ checkGood() {
   echo "Server pid: $NODE_PID"
   sleep 5
   echo "Executing tests against http://localhost:$PORT"
-  sudo pip install -r harmony_output/client/python/requirements.txt
+  pip install -r harmony_output/client/python/requirements.txt
   python harmony_output/client/python/test.py http://localhost:$PORT > /dev/null
   TEST_OUTPUT=$?
   echo "Killing server (pid: $NODE_PID)"
