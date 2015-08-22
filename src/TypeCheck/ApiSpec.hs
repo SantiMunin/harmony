@@ -112,14 +112,14 @@ instance (Show ApiSpec) where
       printEnums as = intercalate "\n" $ map printEnum (M.toList $ enums as)
         where
           printEnum (name, info) = "enum " ++ name ++ " { " ++ printEnumValues info ++ " }"
-          printEnumValues info = intercalate ", " $ map show info
+          printEnumValues info = intercalate ", " info
       printStructs as = intercalate "\n\n" $ map printStruct (structs as)
         where
           printStruct (name, info) = "struct " ++ name ++ " {\n" ++ intercalate ",\n" (printFields info) ++ "\n}"
           printFields = map (\f -> "  " ++ show f)
       printResources as = intercalate "\n" $ map printResource (M.toList $ resources as)
         where
-          printResource (structName, (route, writable)) = "resource " ++ structName ++ " (\"" ++ route ++ "\")" ++ if writable then "" else " read_only"
+          printResource (structName, (route, writable)) = "resource " ++ structName ++ " (\"/" ++ route ++ "\")" ++ if writable then "" else " read_only"
 
 -- | Gets the primary key of a struct if it was specified.
 getPrimaryKey :: StructInfo -- ^ The info of the struct
@@ -155,15 +155,21 @@ nonEmptyString :: Gen String
 nonEmptyString = listOf1 (elements ['a'..'z'])
 
 -- | Generates an arbitrary 'FieldInfo', making sure that the ids used for enums and structs are valid.
-generateRandomFieldInfo :: [Id] -> [Id] -> Gen FieldInfo
-generateRandomFieldInfo enumIds structIds =
+generateRandomFieldInfo :: Bool -> [Id] -> [Id] -> Gen FieldInfo
+generateRandomFieldInfo withAuthentication enumIds structIds =
   do
     id <- nonEmptyString
     t <- generateRandomType enumIds structIds
     nModifiers <- oneof $ map return [0..2]
     modifiers <- vectorOf nModifiers arbitrary
+    let modifiers' = if withAuthentication then modifiers else removeAuthentication modifiers
     return $ FI (id, t, S.fromList modifiers)
   where
+    removeAuthentication :: [Modifier] -> [Modifier]
+    removeAuthentication modifiers = go modifiers []
+      where
+        go [] acc = acc
+        go (x:xs) acc = if x == UserLogin then go xs acc else go xs (x:acc)
     generateRandomType :: [Id] -> [Id] -> Gen Type
     generateRandomType enumIds structIds = do
       t <- arbitrary
@@ -210,16 +216,17 @@ instance (Arbitrary ApiSpec) where
     name' <- nonEmptyString
     -- TODO: make arbitrary
     let version' = "1.0.0"
+    withAuthentication <- arbitrary
     nEnums <- oneof $ map return [0..5]
     enumIds <- generateStringsWithoutClashes nEnums S.empty
     enums' <- mapM createEnum enumIds
     nStructs <- oneof $ map return [1..7]
     structIds <- generateStringsWithoutClashes nStructs (S.fromList enumIds)
-    structs' <- mapM (createStruct enumIds structIds) structIds
+    structs' <- mapM (createStruct enumIds structIds withAuthentication) structIds
     resources' <- mapM (createResource . fst) structs'
     return AS { name = name'
               , version = version'
-              , requiresAuth = False
+              , requiresAuth = withAuthentication
               , enums = M.fromList enums'
               , structs = structs'
               , resources = M.fromList resources'
@@ -230,10 +237,10 @@ instance (Arbitrary ApiSpec) where
         values <- listOf1 nonEmptyString
         return (id, values)
 
-      createStruct :: [Id] -> [Id] -> Id -> Gen (Id, StructInfo)
-      createStruct enumIds structIds thisStructId = do
+      createStruct :: [Id] -> [Id] -> Bool -> Id -> Gen (Id, StructInfo)
+      createStruct enumIds structIds withAuthentication thisStructId = do
         nFields <- oneof $ map return [1..8]
-        rawFields <- vectorOf nFields $ generateRandomFieldInfo enumIds structIds
+        rawFields <- vectorOf nFields $ generateRandomFieldInfo withAuthentication enumIds structIds
         shouldHavePk <- arbitrary
         let fields = filterPrimaryKey shouldHavePk rawFields
         return (thisStructId, fields)
