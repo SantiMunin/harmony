@@ -163,7 +163,7 @@ generateRandomFieldInfo withAuthentication enumIds structIds =
     nModifiers <- oneof $ map return [0..2]
     modifiers <- vectorOf nModifiers arbitrary
     let modifiers' = if withAuthentication then modifiers else removeAuthentication modifiers
-    return $ FI (id, t, S.fromList modifiers)
+    return $ FI (id, t, S.fromList modifiers')
   where
     removeAuthentication :: [Modifier] -> [Modifier]
     removeAuthentication modifiers = go modifiers []
