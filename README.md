@@ -24,7 +24,8 @@ After installing the package (`cabal install`), you will get the `harmony` execu
 
 ```
 Usage: harmony [OPTION...] input_file
-  -c[CLIENTS]     --client[=CLIENTS]         Desired output for the client: {-cpython, -cjava}
+  -c[CLIENTS]     --client[=CLIENTS]         Desired output for the client: {-cpython,
+  -cjava}
   -s[SERVERS]     --server[=SERVERS]         Desired output for the server: {-sjs}
   -o[OUTPUT_DIR]  --output_dir[=OUTPUT_DIR]  Output path
 ```
