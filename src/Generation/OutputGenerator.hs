@@ -166,7 +166,9 @@ removeUselessCommasAndApplyAStyle path = do
   infoM "Generation.OutputGenerator" $ "Applying astyle to " ++ path
   outcome <- system $ "astyle " ++ path
   case outcome of
-    ExitSuccess -> return ()
+    ExitSuccess -> do
+      system $ "rm " ++ path ++ ".orig"
+      return ()
     (ExitFailure _) ->
       warningM "Generation.OutputGenerator" $ "There was a problem applying the Java beautifier, "
               ++ "please check if it is installed and in the system's path (if "
