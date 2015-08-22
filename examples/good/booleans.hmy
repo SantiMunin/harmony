@@ -1,0 +1,8 @@
+service_name: BooleanTest
+service_version: 1.0.0
+
+struct Struct1 {
+  b : Boolean
+}
+
+resource Struct1 ("/struct")
