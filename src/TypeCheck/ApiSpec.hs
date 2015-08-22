@@ -106,7 +106,7 @@ instance (Show ApiSpec) where
                              ]
     where
       printName as = "service_name: " ++ name as
-      printVersion as = "service_versions" ++ version as
+      printVersion as = "service_version: " ++ version as
       printModules as | requiresAuth as = "require modules [ Authentication ]"
                       | otherwise = ""
       printEnums as = intercalate "\n" $ map printEnum (M.toList $ enums as)
@@ -211,10 +211,10 @@ instance (Arbitrary ApiSpec) where
     -- TODO: make arbitrary
     let version' = "1.0.0"
     nEnums <- oneof $ map return [0..5]
-    enumIds <- vectorOf nEnums nonEmptyString
+    enumIds <- generateStringsWithoutClashes nEnums S.empty
     enums' <- mapM createEnum enumIds
     nStructs <- oneof $ map return [1..7]
-    structIds <- vectorOf nStructs nonEmptyString
+    structIds <- generateStringsWithoutClashes nStructs (S.fromList enumIds)
     structs' <- mapM (createStruct enumIds structIds) structIds
     resources' <- mapM (createResource . fst) structs'
     return AS { name = name'
@@ -248,6 +248,18 @@ instance (Arbitrary ApiSpec) where
         route <- nonEmptyString
         writable <- arbitrary
         return (id, (route, writable))
+
+      generateStringsWithoutClashes :: Int -> S.Set String -> Gen [String]
+      generateStringsWithoutClashes n strs = go n strs []
+        where
+          go :: Int -> S.Set String -> [String] -> Gen [String]
+          go 0 _ acc = return acc
+          go n strs acc = do
+            new <- nonEmptyString
+            if S.member new strs
+            then go n strs acc
+            else go (n-1) (S.insert new strs) (new:acc)
+
 
 instance (Arbitrary Type) where
   arbitrary = do
