@@ -38,7 +38,7 @@ checkJavaGood() {
   printf "%s" "Compiling Java target... "
   mvn -f harmony_output/client/java/pom.xml compile | grep 'BUILD SUCCESS' > /dev/null
   exitWithMessageIfFailure $? "Maven could not compile the generated Java target for examples/good/$1"
-  printf "%s" "OK"
+  printf "%s\n" "OK"
   # TODO: once tests are implemented, this should use a server and execute them
 }
 
