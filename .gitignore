@@ -13,6 +13,10 @@ src/Language
 *.swp
 *.swo
 harmony_output
+tests_output
+failed_tests
+passed_tests
+venv
 *.tix
 .hpc
 .hypothesis

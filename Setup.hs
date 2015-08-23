@@ -13,7 +13,7 @@ main = defaultMainWithHooks $ simpleUserHooks { preConf = makeBnfc }
 -- compiling.  
 makeBnfc :: Args -> ConfigFlags -> IO HookedBuildInfo
 makeBnfc _ _ = do 
-  bnfcOutput <- system "./make_bnfc.sh"
+  bnfcOutput <- system "scripts/build/make_bnfc.sh"
   case bnfcOutput of
        ExitSuccess -> return emptyHookedBuildInfo
        (ExitFailure code) -> error $ "Error processing the language specification: " ++ show code

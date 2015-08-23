@@ -36,7 +36,10 @@ data-files:          templates/server/js/package.tpl
                    , templates/client/java/src/main/java/com/prototype/ServiceClient.tpl
 
 extra-source-files:  README.md
-                   , make_bnfc.sh
+                   , scripts/build/make_bnfc.sh
+                   , scripts/testing/end_to_end_tests.sh
+                   , scripts/testing/test_good.sh
+                   , scripts/testing/test_bad.sh
 
 cabal-version:       >= 1.18
 
