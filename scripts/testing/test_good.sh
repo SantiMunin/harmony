@@ -3,7 +3,8 @@
 exitWithMessageIfFailure() {
   if [ $1 != 0 ]; then
     echo ""
-    printf "\033[01;31m%s\033[00m\n" "ERROR: $2";
+    printf "\033[01;31m%s\033[00m" "[ERROR] ";
+    printf "$2\n";
     exit 1;
   fi
 }
@@ -28,7 +29,7 @@ checkGood() {
   TEST_OUTPUT=$?
   echo "Killing server (pid: $NODE_PID)"
   kill -9 $NODE_PID
-  exitWithMessageIfFailure $TEST_OUTPUT "There was a problem while executing the tests (or they failed)."
+  exitWithMessageIfFailure $TEST_OUTPUT "There was a problem while executing the tests for $1 (or they failed)."
 }
 
 checkJavaGood() {

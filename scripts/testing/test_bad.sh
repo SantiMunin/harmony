@@ -1,19 +1,11 @@
 #!/bin/sh
 
-exitWithMessageIfFailure() {
-  if [ $1 != 0 ]; then
-    echo ""
-    printf "\033[01;31m%s\033[00m\n" "ERROR: $2";
-    exit 1;
-  fi
-}
-
 checkBad() {
   echo "\nTrying to generate target for $1 (it should fail)"
   harmony -sjs -cpython examples/bad/$1 2> /dev/null
   if [ $? = 0 ]; then
     echo "File $1 compiled successfully (it shouldn't)";
-    exit 1;
+    exit 1
   fi
 } 
 
