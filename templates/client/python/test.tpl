@@ -173,7 +173,9 @@ class Test{{schemaName}}(ServiceTest):
     self.assertEqual(authResponse.status_code, 200);
     token = json.loads(authResponse.text)['token']
 {{/requiresAuth}}
-    self.assertEqual(0, len(json.loads(get{{schemaName}}_list(url{{#requiresAuth}},token{{/requiresAuth}}).text)))
+    getListResponse = get{{schemaName}}_list(url{{#requiresAuth}},token{{/requiresAuth}})
+    self.assertEqual(200, getListResponse.status_code)
+    self.assertEqual(0, len(json.loads(getListResponse.text)))
 {{/schemaRoute}}
 {{/writable}}
 {{/schema}}
