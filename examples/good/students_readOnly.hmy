@@ -1,0 +1,13 @@
+// Basic usage example with single types
+service_name: StudentService
+service_version: 1.0.0
+
+struct Student {
+  @Unique
+  name: String,
+  age: Int,
+  address: String,
+  mayor: String
+}
+
+resource Student("/student") read_only

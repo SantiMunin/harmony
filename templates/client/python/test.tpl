@@ -2,6 +2,7 @@ from client import *
 from hypothesis import *
 from hypothesis.specifiers import * 
 from hypothesis.strategies import *
+import json
 import unittest
 import copy
 import sys
@@ -79,6 +80,9 @@ Settings.default.average_list_length = 3
 {{#schema}}
 {{#schemaRoute}}
 class Test{{schemaName}}(ServiceTest):
+{{/schemaRoute}}
+{{#writable}}
+{{#schemaRoute}}
   @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, lists(elements=one_of(integers(65, 90), integers(
         97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
@@ -154,6 +158,24 @@ class Test{{schemaName}}(ServiceTest):
     self.assertEqual(404, getAfterDeleteResponse.status_code)
 
 {{/schemaRoute}}
+{{/writable}}
+{{^writable}}
+{{#schemaRoute}}
+{{#requiresAuth}}
+  @given(lists(elements=one_of(integers(65, 90), integers(
+        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
+{{/requiresAuth}}
+  def test_get(self{{#requiresAuth}}, userData{{/requiresAuth}}):
+{{#requiresAuth}}
+    assume(is_valid_id_string(userData))
+    registerResponse = register(url, userData, userData)
+    authResponse = login(url, userData, userData)
+    self.assertEqual(authResponse.status_code, 200);
+    token = json.loads(authResponse.text)['token']
+{{/requiresAuth}}
+    self.assertEqual(0, len(json.loads(get{{schemaName}}_list(url{{#requiresAuth}},token{{/requiresAuth}}).text)))
+{{/schemaRoute}}
+{{/writable}}
 {{/schema}}
 
 {{#requiresAuth}}
