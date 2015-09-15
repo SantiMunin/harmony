@@ -189,8 +189,8 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
     }
 {{/hasKeyField}}
 
-    public ServerResponse<Void> delete{{schemaName}}({{schemaName}} item) throws IOException {
-        NetworkClient.Response response = networkClient.performDelete(baseUrl + "/{{schemaName}}", "DELETE");
+    public ServerResponse<Void> delete{{schemaName}}({{schemaName}} item{{#requiresAuth}}, String token{{/requiresAuth}}) throws IOException {
+        NetworkClient.Response response = networkClient.performDelete(baseUrl + "/{{schemaName}}"{{#requiresAuth}}, token{{/requiresAuth}}, );
         int statusCode = response.getStatusCode();
         int statusType = statusCode / 100;
         if (statusType == 2) {
