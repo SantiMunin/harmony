@@ -7,6 +7,10 @@ import unittest
 import copy
 import sys
 
+# Strategy for generating a non empty string
+non_empty_string_generator = lists(elements=one_of(integers(65, 90), integers(
+        97, 122))).map(lambda l: map(chr, l)).map(lambda l: 'a' + ''.join(l))
+
 def is_valid_id_string(id_string):
   return len(id_string) > 0 \
          and len(id_string) < 20 \
@@ -83,8 +87,7 @@ class Test{{schemaName}}(ServiceTest):
 {{/schemaRoute}}
 {{#writable}}
 {{#schemaRoute}}
-  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, lists(elements=one_of(integers(65, 90), integers(
-        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)){{/requiresAuth}})
+  @given({{#schemaVars}}{{#isKey}}{{&varType}}, {{/isKey}}{{/schemaVars}}{{schemaName}}Data, {{schemaName}}Data{{#requiresAuth}}, non_empty_string_generator{{/requiresAuth}})
   def test_insert_edit_delete(self, {{#hasKeyField}}id, {{/hasKeyField}}data, data2{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#schemaVars}}
 {{#isUserLogin}}
@@ -162,8 +165,7 @@ class Test{{schemaName}}(ServiceTest):
 {{^writable}}
 {{#schemaRoute}}
 {{#requiresAuth}}
-  @given(lists(elements=one_of(integers(65, 90), integers(
-        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
+  @given(non_empty_string_generator)
 {{/requiresAuth}}
   def test_get(self{{#requiresAuth}}, userData{{/requiresAuth}}):
 {{#requiresAuth}}
@@ -182,8 +184,7 @@ class Test{{schemaName}}(ServiceTest):
 
 {{#requiresAuth}}
 class LoginTest(ServiceTest):
-  @given(lists(elements=one_of(integers(65, 90), integers(
-        97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l)))
+  @given(non_empty_string_generator)
   def login_test(self, userData):
     register = register(url, userData, userData)
     correctLoginResponse = login(url, userData, userData)

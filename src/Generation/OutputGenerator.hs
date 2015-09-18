@@ -72,7 +72,7 @@ generatePythonClient = generateOutput (files, templates, fieldMapping, fieldMapp
                 ]
     -- These are the generators for the different types used by Hypothesis.
     fieldMapping AS.TBool = "booleans()"
-    fieldMapping AS.TString = "lists(elements=one_of(integers(65, 90), integers(97, 122))).map(lambda l: map(chr, l)).map(lambda l: ''.join(l))"
+    fieldMapping AS.TString = "non_empty_string_generator"
     fieldMapping AS.TInt = "integers(-1000,1000)"
     fieldMapping AS.TLong = "integers(-1000,1000)"
     -- TODO: check handling of floats in Python
