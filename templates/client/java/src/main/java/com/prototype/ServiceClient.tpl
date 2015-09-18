@@ -136,7 +136,7 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
 {{#schema}}{{#schemaRoute}}
 
   public ServerResponse<List<{{schemaName}}>> get{{schemaName}}List({{#requiresAuth}}String token{{/requiresAuth}}) throws IOException {
-    NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "{{&value}}" {{#requiresAuth}}+ "/" + token{{/requiresAuth}});
+    NetworkClient.Response response = networkClient.performGet(baseUrl + "/" + "{{&value}}" {{#requiresAuth}}, token{{/requiresAuth}});
         JSONArray array = new JSONArray(response.getContent(), );
         List<{{schemaName}}> list = new ArrayList<{{schemaName}}>();
         for (int i = 0; i < array.length(); i++) {
@@ -189,7 +189,17 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
     }
 {{/hasKeyField}}
 
-//TODO: delete
+    public ServerResponse<Void> delete{{schemaName}}({{schemaName}} item{{#requiresAuth}}, String token{{/requiresAuth}}) throws IOException {
+        NetworkClient.Response response = networkClient.performDelete(baseUrl + "/{{schemaName}}"{{#requiresAuth}}, token{{/requiresAuth}}, );
+        int statusCode = response.getStatusCode();
+        int statusType = statusCode / 100;
+        if (statusType == 2) {
+            return new ServerResponse<Void>(statusCode, null, );
+        } else {
+            return new ServerResponse<Void>(statusCode, null, );
+        }
+    }
+
 {{/writable}}
 {{/schemaRoute}}{{/schema}}
 

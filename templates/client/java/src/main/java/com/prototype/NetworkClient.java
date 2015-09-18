@@ -32,16 +32,12 @@ public class NetworkClient {
         }
     }
 
-    /**
-     * Performs a get operation, returning code and response body/error.
-     */
     public Response performGet(String url) throws IOException {
-        HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
-        return new Response(httpConnection.getResponseCode(), getContent(httpConnection));
+        return performOperation(url, "GET");
     }
 
     public Response performGet(String url, String token) throws IOException {
-        return performGet(url + "/" + token);
+        return performOperation(url + "/" + token, "GET");
     }
 
     /**
@@ -64,6 +60,20 @@ public class NetworkClient {
 
     public Response performPut(String url, String body, String token) throws IOException {
         return performOperationWithBody(url + "/" + token, body, "PUT");
+    }
+
+    public Response performDelete(String url) throws IOException {
+      return performOperation(url, "DELETE");
+    }
+
+    public Response performDelete(String url, String token) throws IOException {
+      return performOperation(url + "/" + token, "DELETE");
+    }
+
+    private Response performOperation(String url, String method) throws IOException {
+        HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
+        httpConnection.setRequestMethod(method);
+        return new Response(httpConnection.getResponseCode(), getContent(httpConnection));
     }
 
     private Response performOperationWithBody(String url, String body, String method) throws IOException {
