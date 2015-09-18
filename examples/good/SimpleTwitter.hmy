@@ -1,0 +1,27 @@
+service_name: SimpleTwitter
+service_version: 1.0.0
+
+require modules [ Authentication ]
+
+struct Tweet {
+  @UserLogin
+  @Required
+  author: String,
+  timestamp: Long,
+  @Required
+  content: String
+}
+
+struct PrivateMessage {
+  @UserLogin
+  @Required
+  author: String,
+  @Required
+  to: String,
+  timestamp: Long,
+  @Required
+  content: String
+}
+
+resource Tweet("/tweet")
+resource PrivateMessage("/message")

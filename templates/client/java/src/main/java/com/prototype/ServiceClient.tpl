@@ -80,11 +80,11 @@ public static enum {{&varBoxedType}} { {{#values}}{{value}},{{/values}} }
   putListStructOpt(result, "{{varName}}", {{varName}}, );
 {{/isList}}
 {{^isList}}
-  putStructOpt(result, "{{varName}}", {{varName}}, );
+  putStruct(result, "{{varName}}", {{varName}}, );
 {{/isList}}
 {{/isStruct}}
 {{^isStruct}}
-    putOpt(result, "{{varName}}", {{varName}}, );
+    putValue(result, "{{varName}}", {{varName}}, );
 {{/isStruct}}
 {{/schemaVars}}
     return result;
@@ -111,7 +111,7 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
   getEnumOpt(jObj, {{&varBoxedType}}.class, "{{varName}}");
 {{/isEnum}}
 {{^isEnum}}
-  getOpt(jObj, "{{varName}}", );
+  {{#isRequired}}getValue{{/isRequired}}{{^isRequired}}getValueOpt{{/isRequired}}(jObj, "{{varName}}", );
 {{/isEnum}}
 {{/isStruct}}
 {{/schemaVars}}
@@ -212,8 +212,12 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
      * Disclaimer: this method performs an unsafe cast, beware of possible programming errors not detected in
      * compilation time.
      */
-    protected static <T> Optional<T> getOpt(JSONObject jObj, String key, ) {
+    protected static <T> Optional<T> getValueOpt(JSONObject jObj, String key, ) {
         return jObj.has(key) ? Optional.of((T) jObj.get(key)) : Optional.<T>absent();
+    }
+
+    protected static <T> T getValue(JSONObject jObj, String key, ) {
+        return (T) jObj.get(key);
     }
 
     protected static <T extends Enum<T>> Optional<T> getEnumOpt(JSONObject jObj, Class<T> enumType, String key, ) {
@@ -258,16 +262,24 @@ public static class {{schemaName}}Factory implements EntityFactory<{{schemaName}
     /**
      * Puts an object only if it is present.
      */
-    protected static <T> void putOpt(JSONObject jObj, String key, Optional<T> optVal, ) {
+    protected static <T> void putValue(JSONObject jObj, String key, Optional<T> optVal, ) {
         if (optVal.isPresent()) {
-            jObj.put(key, optVal.get());
+            putValue(jObj, key, optVal.get());
         }
     }
 
-    protected static <T extends Entity> void putStructOpt(JSONObject jObj, String key, Optional<T> optVal, ) {
+    protected static <T> void putValue(JSONObject jObj, String key, T val, ) {
+            jObj.put(key, val);
+    }
+
+    protected static <T extends Entity> void putStruct(JSONObject jObj, String key, Optional<T> optVal, ) {
         if (optVal.isPresent()) {
-            jObj.put(key, optVal.get().toJSON());
+            putStruct(jObj, key, optVal.get());
         }
+    }
+
+    protected static <T extends Entity> void putStruct(JSONObject jObj, String key, T val, ) {
+            jObj.put(key, val.toJSON());
     }
 
     protected static <T extends Entity> void putListStructOpt(JSONObject jObj, String key, Optional<List<T>> optVal, ) {
