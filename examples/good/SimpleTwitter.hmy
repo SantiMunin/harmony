@@ -3,13 +3,16 @@ service_version: 1.0.0
 
 require modules [ Authentication ]
 
+enum TweetKind { NORMAL, PROMOTED }
+
 struct Tweet {
   @UserLogin
   @Required
   author: String,
   timestamp: Long,
   @Required
-  content: String
+  content: String,
+  kind: TweetKind
 }
 
 struct PrivateMessage {
@@ -23,5 +26,13 @@ struct PrivateMessage {
   content: String
 }
 
+struct TopicList {
+  @PK
+  name: String,
+  @Required
+  accounts: [String]
+}
+
 resource Tweet("/tweet")
 resource PrivateMessage("/message")
+resource TopicList("/topicList")
