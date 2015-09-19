@@ -185,13 +185,13 @@ class Test{{schemaName}}(ServiceTest):
 {{#requiresAuth}}
 class LoginTest(ServiceTest):
   @given(non_empty_string_generator)
-  def login_test(self, userData):
-    register = register(url, userData, userData)
+  def test_login(self, userData):
+    registerResponse = register(url, userData, userData)
     correctLoginResponse = login(url, userData, userData)
-    assertEqual(200, correctLoginResponse.status_code)
-    assertTrue(len(json.loads(correctLoginResponse.text)['token']) > 0)
+    self.assertEqual(200, correctLoginResponse.status_code)
+    self.assertTrue(len(json.loads(correctLoginResponse.text)['token']) > 0)
     incorrectLoginResponse = login(url, userData, userData + "XYZ")
-    assertEqual(401, incorrectLoginResponse.status_code)
+    self.assertEqual(401, incorrectLoginResponse.status_code)
 {{/requiresAuth}}
 
 if __name__ == '__main__':

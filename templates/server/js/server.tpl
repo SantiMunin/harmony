@@ -9,7 +9,7 @@ var SchemaTypes = mongoose.Schema.Types;
 
 app.use(bodyParser.json());
 
-mongoose.connect(args[1]);
+mongoose.connect(args[1]+"/"+args[2]);
 
 {{#requiresAuth}}
 // User registration and authentication
@@ -251,5 +251,13 @@ app.delete('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(r
 {{/writable}}
 {{/schemaRoute}}
 {{/schema}}
+
+app.delete('/_wipedatabase', function(req, res) {
+   var sys = require('sys')
+   var exec = require('child_process').exec;
+   function puts(error, stdout, stderr) { if (error) { console.log(stderr); res.status(500).send(); } else {console.log(stdout); res.status(200).send(); }}
+   exec("mongo " + args[2] + " --eval \"db.getCollectionNames().forEach(function(n){db[n].remove({})});\"", puts); 
+   res.status(200).send();
+});
 
 app.listen(args[0]);

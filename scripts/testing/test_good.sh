@@ -19,7 +19,7 @@ checkGood() {
   exitWithMessageIfFailure $? "There was a problem while executing npm-cache install"
   cd ../../..
   echo "Executing server in background"
-  node harmony_output/server/js/server.js $PORT $MONGO_ADD > /dev/null &
+  node harmony_output/server/js/server.js $PORT $MONGO_ADD $MONGO_DB > /dev/null &
   NODE_PID=$!
   echo "Server pid: $NODE_PID"
   sleep 5
@@ -44,7 +44,8 @@ checkJavaGood() {
 }
 
 PORT=3123
-MONGO_ADD="mongodb://localhost/test_db"
+MONGO_ADD="mongodb://localhost"
+MONGO_DB="_test_db"
 
 checkGood $1
 checkJavaGood $1
