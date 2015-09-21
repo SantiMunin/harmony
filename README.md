@@ -1,4 +1,4 @@
-# Harmony [![Hackage version](https://img.shields.io/hackage/v/harmony.svg?style=flat)](https://hackage.haskell.org/package/harmony) [![Build Status](https://secure.travis-ci.org/SantiMunin/harmony.svg?branch=master)](http://travis-ci.org/SantiMunin/harmony)
+# ![Logo](https://raw.githubusercontent.com/SantiMunin/harmony/master/img/logo.png) [![Hackage version](https://img.shields.io/hackage/v/harmony.svg?style=flat)](https://hackage.haskell.org/package/harmony) [![Build Status](https://secure.travis-ci.org/SantiMunin/harmony.svg?branch=master)](http://travis-ci.org/SantiMunin/harmony)
 Harmony is a web service specification compiler that generates implementation (server and client) and tests.
 
 ## Targets supported
