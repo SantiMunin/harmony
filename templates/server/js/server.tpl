@@ -207,6 +207,11 @@ app.put('{{&value}}/:id{{#requiresAuth}}/:token{{/requiresAuth}}', function(req,
     return;
   }
   {{/hasKeyField}}
+{{#schemaVars}}
+{{#isKey}}
+req.body.{{varName}} = req.params.id
+{{/isKey}}
+{{/schemaVars}}
 {{#requiresAuth}}
   assertSessionCorrect(req.params.token, res, function(userLogin) {
 {{/requiresAuth}}
