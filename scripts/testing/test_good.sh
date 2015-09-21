@@ -22,7 +22,9 @@ checkGood() {
   node harmony_output/server/js/server.js $PORT $MONGO_ADD $MONGO_DB > /dev/null &
   NODE_PID=$!
   echo "Server pid: $NODE_PID"
-  sleep 5
+  sleep 4
+  curl -X DELETE http://localhost:$PORT/_wipedatabase
+  sleep 1
   echo "Executing tests against http://localhost:$PORT"
   pip install -r harmony_output/client/python/requirements.txt
   python harmony_output/client/python/test.py http://localhost:$PORT > /dev/null
