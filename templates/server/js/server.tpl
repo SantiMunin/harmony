@@ -2,7 +2,9 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     app = express(),
-    args = process.argv.slice(2);
+    args = process.argv.slice(2),
+    crypto = require('crypto');
+
 // For doubles
 require('mongoose-double')(mongoose);
 var SchemaTypes = mongoose.Schema.Types;
@@ -89,8 +91,7 @@ var assertSessionCorrect = function(t, res, callback) {
 }
 
 var generateToken = function(login) {
-  //TODO implement
-  return login;
+  return crypto.createHash('sha1').update(login).digest('hex');
 }
 {{/requiresAuth}}
 
