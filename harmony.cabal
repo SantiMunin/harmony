@@ -71,6 +71,7 @@ library
 
   exposed-modules:     TypeCheck.ApiSpec
                      , TypeCheck.StaticCheck
+                     , TypeCheck.StructTrack
                      , Generation.OutputGenerator
                      , Generation.ServiceGenerator
                      , Generation.TemplateCompiler
