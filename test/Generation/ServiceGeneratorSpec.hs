@@ -30,7 +30,7 @@ spec =
 
 prop_enumsCorrectlyTranslated :: AS.ApiSpec -> Property
 prop_enumsCorrectlyTranslated apiSpec =
-  P.printTestCase ("\nResult of generateService: " ++  show result) (property $ all enumProcessingCorrect $ allVariables result)
+  P.counterexample ("\nResult of generateService: " ++  show result) (property $ all enumProcessingCorrect $ allVariables result)
   where
     result = generateService apiSpec fieldMapping boxedFieldMapping
     apiSpecEnumInfo = AS.enums apiSpec
@@ -43,7 +43,7 @@ prop_enumsCorrectlyTranslated apiSpec =
 
 prop_structsCorrectlyTranslated :: AS.ApiSpec -> Property
 prop_structsCorrectlyTranslated apiSpec =
-  P.printTestCase ("\nResult of generateService: " ++ show result) (property $ all structProcessingCorrect $ allVariables result)
+  P.counterexample ("\nResult of generateService: " ++ show result) (property $ all structProcessingCorrect $ allVariables result)
   where
     result = generateService apiSpec fieldMapping boxedFieldMapping
     apiSpecStructInfo = AS.structs apiSpec
@@ -55,7 +55,7 @@ prop_structsCorrectlyTranslated apiSpec =
 
 prop_handlesPrimaryKeyCorrectly :: AS.ApiSpec -> Property
 prop_handlesPrimaryKeyCorrectly apiSpec =
-  P.printTestCase ("\nResult of generateService: " ++ show result) (property $ all primaryKeyProcessingCorrect $ allVariables result)
+  P.counterexample ("\nResult of generateService: " ++ show result) (property $ all primaryKeyProcessingCorrect $ allVariables result)
   where
     result = generateService apiSpec fieldMapping boxedFieldMapping
     primaryKeyProcessingCorrect schemaVar =

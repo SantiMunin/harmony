@@ -7,19 +7,19 @@ makeBnfc() {
   bnfc -d language-spec/Language.cf; 
   rm Language/Test.hs
   rm Language/Print.hs
-  mv Language src
+  mv Language gen/
 }
 
 printf "%s" "Checking status of language specification..."
-if [ ! -d 'src/Language' ]; then
+if [ ! -d 'gen/Language' ]; then
   printf " %s\n" "Language specification needs to be compiled"
   makeBnfc;
   exit 0
 fi
 
-if [ 'language-spec/Language.cf' -nt src/Language/ ]; then 
+if [ 'language-spec/Language.cf' -nt gen/Language/ ]; then 
   printf " %s\n" "Language specification needs to be re-compiled";
-  rm -rf src/Language;
+  rm -rf gen/Language;
   makeBnfc;
   exit 0
 fi

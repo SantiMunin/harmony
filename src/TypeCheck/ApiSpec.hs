@@ -4,11 +4,11 @@
 -- it.
 module TypeCheck.ApiSpec where
 
-import           Control.Monad   (liftM)
+import           Control.Applicative ((<$>))
 import           Data.DeriveTH
 import           Data.List
-import qualified Data.Map        as M
-import qualified Data.Set        as S
+import qualified Data.Map            as M
+import qualified Data.Set            as S
 import           Test.QuickCheck
 
 -- | Identifier of an enum, struct, field...
@@ -194,10 +194,10 @@ generateRandomFieldInfo withAuthentication enumIds structIds =
       where
         processEnum = if null enumIds
                         then generateRandomType enumIds structIds
-                        else liftM TEnum $ elements enumIds
+                        else TEnum <$> elements enumIds
         processStruct =  if null structIds
                           then generateRandomType enumIds structIds
-                          else liftM TStruct $ elements structIds
+                          else TStruct <$> elements structIds
         needsEnumId (TEnum _) = True
         needsEnumId (TList t) = needsEnumId t
         needsEnumId _ = False
@@ -272,9 +272,9 @@ instance (Arbitrary Type) where
   arbitrary = do
     t <- elements [TInt, TLong, TFloat, TDouble, TBool, TString, TEnum "", TStruct "", TList TInt]
     case t of
-         TEnum _ -> liftM TEnum nonEmptyString
-         TStruct _ -> liftM TStruct nonEmptyString
-         TList _ -> liftM TList arbitrarySingleType
+         TEnum _ -> TEnum <$> nonEmptyString
+         TStruct _ -> TStruct <$> nonEmptyString
+         TList _ -> TList <$> arbitrarySingleType
          other -> return other
       where
         -- TODO: add TEnum and TList

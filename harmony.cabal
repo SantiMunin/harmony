@@ -64,7 +64,7 @@ library
   
   ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind
   
-  hs-source-dirs:      src
+  hs-source-dirs:      src, gen
 
   build-tools:         alex
                      , happy
