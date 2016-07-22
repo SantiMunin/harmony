@@ -7,7 +7,7 @@ makeBnfc() {
   bnfc -d language-spec/Language.cf; 
   rm Language/Test.hs
   rm Language/Print.hs
-  mv Language gen/
+  mv Language gen/Language
 }
 
 printf "%s" "Checking status of language specification..."
