@@ -17,13 +17,11 @@ before_install:
   - cabal install happy
   - cabal install bnfc
   - npm install -g npm
-  - npm install -g npm-cache
-  - npm-cache clean
   - sudo pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
 
 script:
   - cabal configure --enable-tests && cabal build && cabal test
-  - sh scripts/testing/end_to_end_tests.sh
+  - sh scripts/testing/end_to_end_tests.sh 0
 

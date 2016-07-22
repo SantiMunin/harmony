@@ -10,12 +10,16 @@ exitWithMessageIfFailure() {
 }
 
 checkGood() {
-  echo "\nGenerating Javascript and Python targets for $1"
+  echo "\nGenerating Javascript and Python targets for $1 (using npm-cache: $2)"
   harmony -sjs -cpython $1
   exitWithMessageIfFailure $? "Harmony couldn't compile $1"
   printf "%s\n" "Installing node.js dependencies..."
   cd harmony_output/server/js
-  npm-cache install 
+  if [ $2 == 1 ]; then
+   npm-cache install
+  else
+    npm install
+  fi
   exitWithMessageIfFailure $? "There was a problem while executing npm-cache install"
   cd ../../..
   echo "Executing server in background"
@@ -49,7 +53,7 @@ PORT=3123
 MONGO_ADD="mongodb://localhost"
 MONGO_DB="_test_db"
 
-checkGood $1
+checkGood $1 $2
 checkJavaGood $1
 
 printf "\n\033[01;32m%s\033[00m" "[OK] "

@@ -15,7 +15,7 @@ cabal install
 
 echo "Checking good examples"
 for file in `ls examples/good`; do
-  sh $file_dir/test_good.sh examples/good/$file
+  sh $file_dir/test_good.sh examples/good/$file $1
   exitWithMessageIfNotEquals 0 $? "good test case failed"
 done
 
