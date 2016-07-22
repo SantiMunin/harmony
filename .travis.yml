@@ -23,5 +23,5 @@ before_install:
 
 script:
   - cabal configure --enable-tests && cabal build && cabal test
-  - sh scripts/testing/end_to_end_tests.sh 0
+  - bash scripts/testing/end_to_end_tests.sh 0
 
