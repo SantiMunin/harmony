@@ -1,25 +1,27 @@
 #!/bin/sh
 
-# Compiles the language specification if it is needed, removing all unnecessary files and appending
-# a pragma to tell HLint to ignore those files.
+# Compiles the language specification if it is needed, removing unnecessary files.
+
+DEST_DIR=gen
 
 makeBnfc() {
   bnfc -d language-spec/Language.cf; 
   rm Language/Test.hs
   rm Language/Print.hs
-  mv Language gen/Language
+  mkdir -p $DEST_DIR 
+  mv Language/ $DEST_DIR
 }
 
 printf "%s" "Checking status of language specification..."
-if [ ! -d 'gen/Language' ]; then
-  printf " %s\n" "Language specification needs to be compiled"
+if [ ! -d '$DEST_DIR' ]; then
+  printf " %s\n" "Language specification needs to be compiled."
   makeBnfc;
   exit 0
 fi
 
-if [ 'language-spec/Language.cf' -nt gen/Language/ ]; then 
+if [ 'language-spec/Language.cf' -nt $DEST_DIR ]; then
   printf " %s\n" "Language specification needs to be re-compiled";
-  rm -rf gen/Language;
+  rm -rf $DEST_DIR;
   makeBnfc;
   exit 0
 fi
