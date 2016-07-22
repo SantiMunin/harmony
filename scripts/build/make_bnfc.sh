@@ -10,6 +10,7 @@ makeBnfc() {
   rm Language/Print.hs
   mkdir -p $DEST_DIR 
   mv Language/ $DEST_DIR
+  rm -rf Language/
 }
 
 printf "%s" "Checking status of language specification..."
