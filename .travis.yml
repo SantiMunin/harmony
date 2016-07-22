@@ -18,6 +18,7 @@ before_install:
   - cabal install bnfc
   - npm install -g npm
   - npm install -g npm-cache
+  - npm-cache clean
   - sudo pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
