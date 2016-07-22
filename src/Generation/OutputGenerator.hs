@@ -80,7 +80,8 @@ generatePythonClient = generateOutput (files, templates, fieldMapping, fieldMapp
     fieldMapping AS.TFloat = "floats(-1000.0, 1000.0)"
     fieldMapping (AS.TEnum _) = "error: no directly translation from enum type to Hypothesis type"
     fieldMapping (AS.TStruct name) = name ++ "Data"
-    fieldMapping (AS.TList t) = "[" ++ fieldMapping t ++ "]"
+    -- This will be used in a lists() call later.
+    fieldMapping (AS.TList t) = fieldMapping t
     fieldMapping other = error $ "Python client generation: Type not recognized -> " ++ show other
     fieldMappingBoxedType _ = error "generatePythonClient: Python has no boxed types"
 

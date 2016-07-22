@@ -74,7 +74,12 @@ Settings.default.average_list_length = 3
 {{/isEnum}}
 {{^isEnum}}
 {{^isKey}}
+{{#isList}}
+  '{{varName}}': lists({{&varType}}, {{#isRequired}}min_size=1{{/isRequired}}{{^isRequired}}min_size=0{{/isRequired}})
+{{/isList}}
+{{^isList}}
   '{{varName}}': {{&varType}}, 
+{{/isList}}
 {{/isKey}}
 {{/isEnum}}
 {{/schemaVars}}
