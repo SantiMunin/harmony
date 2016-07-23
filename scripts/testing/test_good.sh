@@ -31,7 +31,7 @@ checkGood() {
   sleep 1
   echo "Executing tests against http://localhost:$PORT"
   pip install -r harmony_output/client/python/requirements.txt
-  python harmony_output/client/python/test.py http://localhost:$PORT > /dev/null
+  python harmony_output/client/python/test.py http://localhost:$PORT
   TEST_OUTPUT=$?
   echo "Killing server (pid: $NODE_PID)"
   kill -9 $NODE_PID
