@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 processTestResult() {
   if [ $1 == 0 ]; then

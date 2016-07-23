@@ -1,13 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-exitWithMessageIfFailure() {
-  if [ $1 != 0 ]; then
-    echo ""
-    printf "\033[01;31m%s\033[00m" "[ERROR] ";
-    printf "$2\n";
-    exit 1;
-  fi
-}
+source $(dirname "$0")/common.sh
 
 checkGood() {
   echo "\nGenerating Javascript and Python targets for $1 (using npm-cache: $2)"
@@ -25,6 +18,11 @@ checkGood() {
   echo "Executing server in background"
   node harmony_output/server/js/server.js $PORT $MONGO_ADD $MONGO_DB > /dev/null &
   NODE_PID=$!
+  sleep 4
+  "Does $NODE_PID exist?"
+  ps aux | grep $NODE_PID
+  kill -0 $NODE_PID
+  exitWithMessageIfFailure $? "There was a problem while deploying the server"
   echo "Server pid: $NODE_PID"
   sleep 4
   curl -X DELETE http://localhost:$PORT/_wipedatabase
@@ -48,10 +46,6 @@ checkJavaGood() {
   printf "%s\n" "OK"
   # TODO: once tests are implemented, this should use a server and execute them
 }
-
-PORT=3123
-MONGO_ADD="mongodb://localhost"
-MONGO_DB="_test_db"
 
 checkGood $1 $2
 checkJavaGood $1

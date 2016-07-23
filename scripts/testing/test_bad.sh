@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 checkBad() {
   echo "\nTrying to generate target for $1 (it should fail)"
