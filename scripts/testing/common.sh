@@ -25,6 +25,3 @@ exitWithMessageIfFailure() {
     exit 1;
   fi
 }
-
-export -f exitWithMessageIfNotEquals
-export -f exitWithMessageIfFailure
