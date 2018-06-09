@@ -15,8 +15,8 @@ import           Text.Hastache
 import           Text.Hastache.Context
 
 -- | An enum value
-data StrValue = StrValue { value :: String } deriving (Show, Data, Typeable, Eq)
-data EnumValues = EnumValue { values :: [StrValue] } deriving (Show, Data, Typeable, Eq)
+newtype StrValue = StrValue { value :: String } deriving (Show, Data, Typeable, Eq)
+newtype EnumValues = EnumValue { values :: [StrValue] } deriving (Show, Data, Typeable, Eq)
 
 -- | A schema variable. It is a field of a struct.
 -- <b>DISCLAIMER</b>: there is some redundancy but the focus of this module is to make the templating easy.

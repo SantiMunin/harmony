@@ -164,9 +164,7 @@ readAndCheckStructs strs = do
 
 -- | Gets enum names from the environment.
 getEnumNamesFromEnv :: StaticCheck (S.Set String)
-getEnumNamesFromEnv = do
-  as <- CMS.gets snd
-  return $ S.fromList (map fst $ M.toList $ AS.enums as)
+getEnumNamesFromEnv = S.fromList . map fst . M.toList . AS.enums <$> CMS.gets snd
 
 -- | Gets the names (identifiers) of all structs and enums (form the environment).
 getAllNamesFromEnv :: StaticCheck (S.Set String)
