@@ -1,7 +1,7 @@
 #!/bin/bash
 
 processTestResult() {
-  if [ $1 == 0 ]; then
+  if [ "$1" == "0" ]; then
     mv $2 passed_tests
   else
     mv $2 failed_tests

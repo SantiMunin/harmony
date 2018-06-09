@@ -8,7 +8,7 @@ checkGood() {
   exitWithMessageIfFailure $? "Harmony couldn't compile $1"
   printf "%s\n" "Installing node.js dependencies..."
   cd harmony_output/server/js
-  if [ $2 == 1 ]; then
+  if [ "$2" == "1" ]; then
    npm-cache install
   else
     npm install
