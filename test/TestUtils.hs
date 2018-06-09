@@ -1,21 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module TestUtils (assertException) where
+module TestUtils where
 
-import           Control.Exception
-import           Control.Monad
 import           Data.DeriveTH
 import           Language.Abs
-import           Test.HUnit
 import           Test.QuickCheck
-
--- | Asserts that some computation throws a concrete error.
-assertException :: (Exception e, Eq e) => e -> IO a -> IO ()
-assertException ex action =
-  handleJust isWanted (const $ return ()) $ do
-  action
-  assertFailure $ "Expected exception: " ++ show ex
-  where isWanted = guard . (== ex)
 
 -- TODO(#42)
 derive makeArbitrary ''Ident
