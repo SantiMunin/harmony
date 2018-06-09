@@ -16,7 +16,7 @@ before_install:
   - cabal -V
   - cabal install alex
   - cabal install happy
-  - cabal install bnfc
+  - cabal install BNFC
   - npm install -g npm
   - sudo pip install virtualenv
   - virtualenv venv
