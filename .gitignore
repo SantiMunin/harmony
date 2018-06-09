@@ -1,4 +1,5 @@
 dist
+dist-newstyle
 gen
 cabal-dev
 *.o
