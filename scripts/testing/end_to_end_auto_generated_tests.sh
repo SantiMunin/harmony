@@ -1,4 +1,6 @@
 #!/bin/bash
+# NOTE: the generator of Harmony config files is not polished enough, so these
+# tests will most likely fail.
 
 processTestResult() {
   if [ "$1" == "0" ]; then
