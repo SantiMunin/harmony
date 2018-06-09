@@ -2,7 +2,7 @@
 
 file_dir="$(dirname "$0")"
 
-source $file_dir/common.sh
+. $file_dir/common.sh
 
 cabal install
 

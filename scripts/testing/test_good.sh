@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $(dirname "$0")/common.sh
+. $(dirname "$0")/common.sh
 
 checkGood() {
   echo "\nGenerating Javascript and Python targets for $1 (using npm-cache: $2)"
