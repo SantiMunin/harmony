@@ -10,7 +10,6 @@ services:
 sudo: required
 
 before_install: 
-  - cabal -V
   - cabal install alex
   - cabal install happy
   - cabal install BNFC
