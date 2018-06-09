@@ -41,11 +41,16 @@ extra-source-files:  README.md
                    , scripts/testing/test_good.sh
                    , scripts/testing/test_bad.sh
 
-cabal-version:       >= 1.18
+cabal-version:       2.0
 
 source-repository head
   type:     git
   location: https://github.com/SantiMunin/harmony
+
+custom-setup
+  setup-depends:       base  >= 4.5 && < 5
+                    ,  Cabal >= 2.0
+                    ,  process >= 1.4
 
 library
 
@@ -81,6 +86,7 @@ library
                      , Language.Par
                      , LangUtils
                      , Paths_harmony
+  autogen-modules:     Paths_harmony
 
   default-language:    Haskell2010
   
@@ -115,7 +121,7 @@ test-suite hspec
 
   type:                exitcode-stdio-1.0
 
-  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-orphans -fhpc
+  ghc-options:         -Wall -fno-warn-name-shadowing -fno-warn-unused-do-bind -fno-warn-orphans
 
   hs-source-dirs:      test
 
