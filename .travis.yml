@@ -20,6 +20,7 @@ before_install:
   - source venv/bin/activate
 
 script:
-  - cabal new-configure --enable-tests && cabal new-build && cabal new-test
+  - cabal new-test
+  - cabal install
   - bash scripts/testing/end_to_end_tests.sh 0
 
