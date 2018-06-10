@@ -4,7 +4,7 @@ file_dir="$(dirname "$0")"
 
 . $file_dir/common.sh
 
-cabal new-install
+cabal install
 
 echo "Checking good examples"
 for file in `ls examples/good`; do
