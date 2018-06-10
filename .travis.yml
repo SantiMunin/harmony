@@ -10,6 +10,7 @@ services:
 sudo: required
 
 before_install: 
+  - export PATH="$HOME/.cabal/bin:$PATH"
   - cabal install alex
   - cabal install happy
   - cabal install BNFC
@@ -20,6 +21,5 @@ before_install:
 
 script:
   - cabal new-configure --enable-tests && cabal new-build && cabal new-test
-  - cabal install
   - bash scripts/testing/end_to_end_tests.sh 0
 
