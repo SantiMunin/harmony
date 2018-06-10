@@ -4,8 +4,6 @@ file_dir="$(dirname "$0")"
 
 . $file_dir/common.sh
 
-cabal new-install
-
 echo "Checking good examples"
 for file in `ls examples/good`; do
   sh $file_dir/test_good.sh examples/good/$file $1
