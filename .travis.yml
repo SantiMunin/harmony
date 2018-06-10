@@ -18,6 +18,11 @@ before_install:
   - sudo pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
+  - sudo apt-get install -y maven
+
+addons:
+  apt:
+    update: true
 
 script:
   - cabal new-test
